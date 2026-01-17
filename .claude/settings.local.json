@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc --noEmit)",
+      "Bash(timeout 15 npm run dev:*)",
+      "Bash(npm run dev:*)",
+      "Bash(for i in 1 2 3 4 5)",
+      "Bash(do /bin/sleep 2)",
+      "Bash(done)",
+      "Bash(npm run build:*)",
+      "Bash(git.exe rm:*)"
+    ]
+  }
+}

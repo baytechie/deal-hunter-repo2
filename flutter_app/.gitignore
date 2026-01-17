@@ -1,0 +1,26 @@
+# Flutter project structure
+build/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+pubspec.lock
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Generated files
+*.g.dart
+*.config.dart
+
+# Coverage
+coverage/

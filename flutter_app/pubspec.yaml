@@ -1,0 +1,31 @@
+name: money_saver_deals
+description: "Money Saver Deals - Flutter app for finding amazing deals using Clean Architecture and Riverpod."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management
+  flutter_riverpod: ^2.4.0
+  riverpod: ^2.4.0
+
+  # HTTP Client
+  dio: ^5.3.1
+
+  # URL Launching
+  url_launcher: ^6.1.12
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
