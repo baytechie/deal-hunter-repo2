@@ -14,9 +14,14 @@ async function bootstrap() {
   const logger = app.get(LoggerService);
 
   // Enable CORS for Flutter web app and admin panel
-  // Include local network IP for mobile WiFi access
+  // Include local network IP for mobile WiFi access and production domains
   app.enableCors({
     origin: [
+      // Production domains
+      'https://www.huntdeals.app',
+      'https://huntdeals.app',
+      'https://admin.huntdeals.app',
+      // Local development
       'http://localhost:3001', 'http://localhost:5173', 'http://localhost:5174',
       'http://localhost:8080', 'http://localhost:8081', 'http://localhost:8085',
       'http://localhost:8086', 'http://localhost:8090', 'http://localhost:8095',

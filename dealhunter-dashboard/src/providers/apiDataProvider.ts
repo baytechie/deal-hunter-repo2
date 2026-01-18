@@ -1,6 +1,6 @@
 import type { DataProvider } from "@refinedev/core";
 
-const API_URL = "http://localhost:3000";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 // Get token from localStorage
 const getToken = (): string | null => {

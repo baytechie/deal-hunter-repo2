@@ -9,7 +9,13 @@ import 'package:money_saver_deals/features/deals/presentation/providers/deals_pr
 
 /// Get the appropriate API base URL based on the platform
 String getApiBaseUrl() {
-  // Use local network IP for WiFi access from mobile devices
+  // Check for compile-time environment variable (for production builds)
+  const apiBaseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: '');
+  if (apiBaseUrl.isNotEmpty) {
+    return apiBaseUrl;
+  }
+
+  // Use local network IP for WiFi access from mobile devices during development
   // UPDATE THIS IP if your network changes
   const localNetworkIp = '10.204.110.213';
 
