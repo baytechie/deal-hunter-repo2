@@ -1,11 +1,51 @@
 import { Injectable, LoggerService as NestLoggerService } from '@nestjs/common';
 import * as winston from 'winston';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class LoggerService implements NestLoggerService {
   private readonly logger: winston.Logger;
 
   constructor() {
+    const isProduction = process.env.NODE_ENV === 'production';
+    const transports: winston.transport[] = [
+      // Console transport - always enabled
+      new winston.transports.Console({
+        format: winston.format.combine(
+          winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss.SSS' }),
+          winston.format.json(),
+        ),
+      }),
+    ];
+
+    // Only add file transports in development (not on Render/production)
+    if (!isProduction) {
+      const logsDir = path.join(process.cwd(), 'logs');
+      // Ensure logs directory exists
+      if (!fs.existsSync(logsDir)) {
+        fs.mkdirSync(logsDir, { recursive: true });
+      }
+
+      transports.push(
+        new winston.transports.File({
+          filename: path.join(logsDir, 'error.log'),
+          level: 'error',
+          format: winston.format.combine(
+            winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss.SSS' }),
+            winston.format.json(),
+          ),
+        }),
+        new winston.transports.File({
+          filename: path.join(logsDir, 'combined.log'),
+          format: winston.format.combine(
+            winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss.SSS' }),
+            winston.format.json(),
+          ),
+        }),
+      );
+    }
+
     this.logger = winston.createLogger({
       level: process.env.LOG_LEVEL || 'debug',
       format: winston.format.combine(
@@ -14,32 +54,7 @@ export class LoggerService implements NestLoggerService {
         winston.format.json(),
       ),
       defaultMeta: { service: 'money-saver-deals' },
-      transports: [
-        // Console transport with JSON formatting
-        new winston.transports.Console({
-          format: winston.format.combine(
-            winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss.SSS' }),
-            winston.format.json(),
-          ),
-        }),
-        // File transport for errors
-        new winston.transports.File({
-          filename: 'logs/error.log',
-          level: 'error',
-          format: winston.format.combine(
-            winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss.SSS' }),
-            winston.format.json(),
-          ),
-        }),
-        // File transport for all logs
-        new winston.transports.File({
-          filename: 'logs/combined.log',
-          format: winston.format.combine(
-            winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss.SSS' }),
-            winston.format.json(),
-          ),
-        }),
-      ],
+      transports,
     });
   }
 

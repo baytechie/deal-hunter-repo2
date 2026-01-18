@@ -11,6 +11,14 @@ import { PendingDealsModule } from './modules/pending-deals/pending-deals.module
 import { Deal } from './modules/deals/entities/deal.entity';
 import { AdminUser } from './modules/auth/entities/admin-user.entity';
 import { PendingDeal } from './modules/pending-deals/entities/pending-deal.entity';
+import * as path from 'path';
+import * as fs from 'fs';
+
+// Ensure data directory exists for SQLite
+const dataDir = path.join(process.cwd(), 'data');
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir, { recursive: true });
+}
 
 @Module({
   imports: [
@@ -19,12 +27,12 @@ import { PendingDeal } from './modules/pending-deals/entities/pending-deal.entit
       isGlobal: true,
       envFilePath: ['.env.local', '.env'],
     }),
-    // TypeORM configuration with SQLite for development
+    // TypeORM configuration with SQLite
     TypeOrmModule.forRoot({
       type: 'sqlite',
-      database: 'data/deals.db',
+      database: process.env.DATABASE_PATH || path.join(dataDir, 'deals.db'),
       entities: [Deal, AdminUser, PendingDeal],
-      synchronize: true, // Auto-sync schema in development (disable in production)
+      synchronize: true, // Auto-sync schema (consider disabling in production with migrations)
       logging: process.env.NODE_ENV === 'development',
     }),
     SharedModule,
