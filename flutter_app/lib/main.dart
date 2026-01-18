@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:money_saver_deals/app_shell.dart';
@@ -6,19 +7,37 @@ import 'package:money_saver_deals/features/deals/data/datasources/api_client.dar
 import 'package:money_saver_deals/features/deals/data/repositories/deals_repository_impl.dart';
 import 'package:money_saver_deals/features/deals/presentation/providers/deals_provider.dart';
 
+/// Get the appropriate API base URL based on the platform
+String getApiBaseUrl() {
+  if (kIsWeb) {
+    // Flutter Web can use localhost
+    return 'http://localhost:3000';
+  } else if (defaultTargetPlatform == TargetPlatform.android) {
+    // Android emulator uses 10.0.2.2 as alias for host machine localhost
+    return 'http://10.0.2.2:3000';
+  } else if (defaultTargetPlatform == TargetPlatform.iOS) {
+    // iOS simulator can use localhost directly
+    return 'http://localhost:3000';
+  } else {
+    // For physical devices, use your computer's local network IP
+    // Update this IP to match your computer's network IP
+    return 'http://192.168.1.67:3000';
+  }
+}
+
 /// Application wrapper with Riverpod provider setup
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   debugPrint('[main] Application starting');
 
+  final baseUrl = getApiBaseUrl();
+  debugPrint('[main] Using API base URL: $baseUrl');
+
   final dio = Dio();
-  // Mobile devices on local network use 192.168.1.67
-  // Android emulator uses 10.0.2.2 (special alias for host machine)
-  // Change 192.168.1.67 to your computer's local IP if different
   final apiClient = ApiClient(
     dio: dio,
-    baseUrl: 'http://192.168.1.67:3000',
+    baseUrl: baseUrl,
   );
   final repository = DealsRepositoryImpl(apiClient: apiClient);
 

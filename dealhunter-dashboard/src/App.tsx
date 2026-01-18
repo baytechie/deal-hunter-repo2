@@ -1,5 +1,4 @@
-import { Authenticated, GitHubBanner, Refine } from "@refinedev/core";
-import { DevtoolsPanel, DevtoolsProvider } from "@refinedev/devtools";
+import { Authenticated, Refine } from "@refinedev/core";
 import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 
 import {
@@ -18,29 +17,33 @@ import { App as AntdApp } from "antd";
 import { BrowserRouter, Outlet, Route, Routes } from "react-router-dom";
 import { ColorModeContextProvider } from "./contexts/color-mode";
 import { DealList } from "./pages/deals/list";
-import { UserList } from "./pages/users/list";
-import { StoreList } from "./pages/stores/list";
+import { PendingDealList } from "./pages/pending-deals/list";
 import { Login } from "./pages/login";
-import { Register } from "./pages/register";
-import { ForgotPassword } from "./pages/forgotPassword";
 import { authProvider } from "./providers/auth";
-import dummyDataProvider from "./providers/dummyDataProvider";
+import { apiDataProvider } from "./providers/apiDataProvider";
 
 function App() {
   return (
-    <BrowserRouter>      
+    <BrowserRouter>
       <RefineKbarProvider>
         <ColorModeContextProvider>
-          <AntdApp>            
+          <AntdApp>
               <Refine
-                dataProvider={dummyDataProvider}
+                dataProvider={apiDataProvider}
                 notificationProvider={useNotificationProvider}
                 routerProvider={routerProvider}
                 authProvider={authProvider}
                 resources={[
-                  { name: "deals", list: "/deals" },
-                  { name: "users", list: "/users" },
-                  { name: "stores", list: "/stores" },
+                  {
+                    name: "deals",
+                    list: "/deals",
+                    meta: { label: "Active Deals" }
+                  },
+                  {
+                    name: "pending-deals",
+                    list: "/pending-deals",
+                    meta: { label: "Pending Deals" }
+                  },
                 ]}
                 options={{
                   syncWithLocation: true,
@@ -51,8 +54,6 @@ function App() {
                 <Routes>
                   {/* Auth routes */}
                   <Route path="/login" element={<Login />} />
-                  <Route path="/register" element={<Register />} />
-                  <Route path="/forgot-password" element={<ForgotPassword />} />
 
                   {/* Protected admin routes */}
                   <Route
@@ -64,15 +65,12 @@ function App() {
                       </Authenticated>
                     }
                   >
-                    <Route index element={<DealList />} />
+                    <Route index element={<NavigateToResource resource="pending-deals" />} />
                     <Route path="deals">
                       <Route index element={<DealList />} />
                     </Route>
-                    <Route path="users">
-                      <Route index element={<UserList />} />
-                    </Route>
-                    <Route path="stores">
-                      <Route index element={<StoreList />} />
+                    <Route path="pending-deals">
+                      <Route index element={<PendingDealList />} />
                     </Route>
                   </Route>
 

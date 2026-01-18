@@ -15,7 +15,7 @@ async function bootstrap() {
 
   // Enable CORS for Flutter web app and admin panel
   app.enableCors({
-    origin: ['http://localhost:3001', 'http://localhost:5173', 'http://localhost:8080', 'http://localhost:8081', 'http://localhost:8085', 'http://localhost:8086'],
+    origin: ['http://localhost:3001', 'http://localhost:5173', 'http://localhost:5174', 'http://localhost:8080', 'http://localhost:8081', 'http://localhost:8085', 'http://localhost:8086'],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,

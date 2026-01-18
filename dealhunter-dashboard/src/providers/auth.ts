@@ -1,48 +1,101 @@
 import type { AuthProvider } from "@refinedev/core";
 import { TOKEN_KEY } from "./constants";
 
-// Hardcoded credentials for authentication
-const VALID_CREDENTIALS = [
-  { email: "admin@dealhunter.com", password: "admin123", name: "Admin User", role: "admin" },
-  { email: "user@dealhunter.com", password: "user123", name: "Regular User", role: "user" },
-  { email: "demo@refine.dev", password: "demodemo", name: "Demo User", role: "admin" },
-];
+const API_URL = "http://localhost:3000";
 
 export const authProvider: AuthProvider = {
   login: async ({ email, password }) => {
-    const user = VALID_CREDENTIALS.find(
-      (cred) => cred.email === email && cred.password === password
-    );
+    console.log("[authProvider] Login attempt for:", email);
+    try {
+      const response = await fetch(`${API_URL}/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ email, password }),
+      });
 
-    if (user) {
-      localStorage.setItem(TOKEN_KEY, JSON.stringify(user));
+      console.log("[authProvider] Login response status:", response.status);
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        console.error("[authProvider] Login failed:", error);
+        return {
+          success: false,
+          error: {
+            name: "LoginError",
+            message: error.message || "Invalid email or password",
+          },
+        };
+      }
+
+      const data = await response.json();
+      console.log("[authProvider] Login successful, storing token");
+
+      // Store the JWT token
+      localStorage.setItem(TOKEN_KEY, data.access_token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      // Verify token was stored
+      const storedToken = localStorage.getItem(TOKEN_KEY);
+      console.log("[authProvider] Token stored successfully:", !!storedToken);
+
       return {
         success: true,
         redirectTo: "/",
       };
+    } catch (error) {
+      console.error("[authProvider] Login error:", error);
+      return {
+        success: false,
+        error: {
+          name: "LoginError",
+          message: "Unable to connect to server",
+        },
+      };
     }
-
-    return {
-      success: false,
-      error: {
-        name: "LoginError",
-        message: "Invalid email or password",
-      },
-    };
   },
+
   logout: async () => {
     localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem("user");
     return {
       success: true,
       redirectTo: "/login",
     };
   },
+
   check: async () => {
     const token = localStorage.getItem(TOKEN_KEY);
+    console.log("[authProvider] Checking auth, token present:", !!token);
+
     if (token) {
-      return {
-        authenticated: true,
-      };
+      // Optionally verify token with backend
+      try {
+        const response = await fetch(`${API_URL}/auth/profile`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: "include",
+        });
+
+        console.log("[authProvider] Profile check response:", response.status);
+
+        if (response.ok) {
+          return { authenticated: true };
+        } else {
+          // Token invalid, clear it
+          console.log("[authProvider] Token invalid, clearing");
+          localStorage.removeItem(TOKEN_KEY);
+          localStorage.removeItem("user");
+        }
+      } catch (err) {
+        // Network error, clear token
+        console.error("[authProvider] Profile check error:", err);
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem("user");
+      }
     }
 
     return {
@@ -50,28 +103,35 @@ export const authProvider: AuthProvider = {
       redirectTo: "/login",
     };
   },
+
   getPermissions: async () => {
-    const token = localStorage.getItem(TOKEN_KEY);
-    if (token) {
-      const user = JSON.parse(token);
-      return user.role;
+    const user = localStorage.getItem("user");
+    if (user) {
+      return "admin"; // All authenticated users are admins for now
     }
     return null;
   },
+
   getIdentity: async () => {
-    const token = localStorage.getItem(TOKEN_KEY);
-    if (token) {
-      const user = JSON.parse(token);
+    const user = localStorage.getItem("user");
+    if (user) {
+      const userData = JSON.parse(user);
       return {
-        id: 1,
-        name: user.name,
+        id: userData.id,
+        name: userData.name,
         avatar: "https://i.pravatar.cc/300",
       };
     }
     return null;
   },
+
   onError: async (error) => {
-    console.error(error);
+    if (error.status === 401) {
+      return {
+        logout: true,
+        redirectTo: "/login",
+      };
+    }
     return { error };
   },
 };
