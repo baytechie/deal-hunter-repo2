@@ -1,6 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindOptionsWhere, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
+import {
+  Repository,
+  FindOptionsWhere,
+  MoreThanOrEqual,
+  LessThanOrEqual,
+  MoreThan,
+  IsNull,
+  Or,
+} from 'typeorm';
 import { Deal } from '../entities/deal.entity';
 import {
   IDealsRepository,
@@ -105,6 +113,60 @@ export class TypeOrmDealsRepository implements IDealsRepository {
       .getRawMany();
 
     return result.map((row) => row.category);
+  }
+
+  async findActiveDeals(
+    filters?: DealFilterOptions,
+    pagination?: PaginationOptions,
+  ): Promise<PaginatedResult<Deal>> {
+    const page = pagination?.page || 1;
+    const limit = pagination?.limit || 10;
+    const skip = (page - 1) * limit;
+
+    // Build query for active deals (not expired)
+    const queryBuilder = this.dealRepository.createQueryBuilder('deal');
+
+    // Filter by expiry: null (no expiry) or future date
+    queryBuilder.where(
+      '(deal.expiryDate IS NULL OR deal.expiryDate > :now)',
+      { now: new Date() },
+    );
+
+    // Apply additional filters
+    if (filters?.category) {
+      queryBuilder.andWhere('deal.category = :category', { category: filters.category });
+    }
+
+    if (filters?.isHot !== undefined) {
+      queryBuilder.andWhere('deal.isHot = :isHot', { isHot: filters.isHot });
+    }
+
+    if (filters?.isFeatured !== undefined) {
+      queryBuilder.andWhere('deal.isFeatured = :isFeatured', { isFeatured: filters.isFeatured });
+    }
+
+    if (filters?.minDiscount !== undefined) {
+      queryBuilder.andWhere('deal.discountPercentage >= :minDiscount', {
+        minDiscount: filters.minDiscount,
+      });
+    }
+
+    if (filters?.maxPrice !== undefined) {
+      queryBuilder.andWhere('deal.price <= :maxPrice', { maxPrice: filters.maxPrice });
+    }
+
+    queryBuilder.orderBy('deal.createdAt', 'DESC');
+    queryBuilder.skip(skip).take(limit);
+
+    const [data, total] = await queryBuilder.getManyAndCount();
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   /**

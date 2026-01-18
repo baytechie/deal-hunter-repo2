@@ -249,4 +249,19 @@ export class DealsService {
   getDealSavings(deal: Deal): number {
     return Number((deal.originalPrice - deal.price).toFixed(2));
   }
+
+  /**
+   * Get active deals for mobile app
+   * Returns approved deals that are not expired
+   */
+  async findActiveDeals(
+    filters?: DealFilterOptions,
+    pagination?: PaginationOptions,
+  ): Promise<PaginatedResult<Deal>> {
+    this.logger.debug(
+      `Finding active deals with filters: ${JSON.stringify(filters)}`,
+      this.context,
+    );
+    return this.dealsRepository.findActiveDeals(filters, pagination);
+  }
 }

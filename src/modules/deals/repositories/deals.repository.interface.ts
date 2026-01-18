@@ -85,6 +85,14 @@ export interface IDealsRepository {
    * Get all unique categories
    */
   getCategories(): Promise<string[]>;
+
+  /**
+   * Find active deals (approved and not expired) for mobile app
+   */
+  findActiveDeals(
+    filters?: DealFilterOptions,
+    pagination?: PaginationOptions,
+  ): Promise<PaginatedResult<Deal>>;
 }
 
 /**

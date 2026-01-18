@@ -50,6 +50,12 @@ export class Deal {
   @Column({ type: 'varchar', length: 100 })
   category: string;
 
+  @Column({ type: 'varchar', length: 20, nullable: true })
+  asin: string | null;
+
+  @Column({ type: 'uuid', nullable: true })
+  pendingDealId: string | null;
+
   @CreateDateColumn()
   createdAt: Date;
 

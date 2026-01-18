@@ -4,6 +4,7 @@ import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './shared/filters/all-exceptions.filter';
 import { LoggerService } from './shared/services/logger.service';
 import { DealsService } from './modules/deals/deals.service';
+import { AuthService } from './modules/auth/auth.service';
 import { sampleDeals } from './modules/deals/seeds/deals.seed';
 
 async function bootstrap() {
@@ -38,6 +39,9 @@ async function bootstrap() {
   // Seed sample deals if database is empty
   await seedDeals(app, logger);
 
+  // Seed default admin user
+  await seedAdminUser(app, logger);
+
   const port = process.env.PORT || 3000;
   await app.listen(port);
 
@@ -65,6 +69,18 @@ async function seedDeals(app: any, logger: LoggerService) {
     }
   } catch (error) {
     logger.error(`Failed to seed deals: ${error.message}`, error.stack, 'Seeder');
+  }
+}
+
+/**
+ * Seed default admin user if none exists
+ */
+async function seedAdminUser(app: any, logger: LoggerService) {
+  try {
+    const authService = app.get(AuthService);
+    await authService.seedAdminUser();
+  } catch (error) {
+    logger.error(`Failed to seed admin user: ${error.message}`, error.stack, 'Seeder');
   }
 }
 

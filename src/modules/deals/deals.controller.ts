@@ -270,6 +270,53 @@ export class DealsController {
   }
 
   /**
+   * GET /deals/active
+   * Get active deals for mobile app (approved and not expired)
+   */
+  @Get('active')
+  async findActiveDeals(@Query() query: GetDealsQueryDto): Promise<PaginatedResult<Deal>> {
+    const requestId = this.generateRequestId();
+
+    // Entry logging
+    this.logger.log(
+      `[${requestId}] ENTRY: GET /deals/active - Query params: ${JSON.stringify(query)}`,
+      this.context,
+    );
+
+    try {
+      const filters = {
+        category: query.category,
+        isHot: query.isHot,
+        isFeatured: query.isFeatured,
+        minDiscount: query.minDiscount,
+        maxPrice: query.maxPrice,
+      };
+
+      const pagination = {
+        page: query.page ?? 1,
+        limit: query.limit ?? 10,
+      };
+
+      const result = await this.dealsService.findActiveDeals(filters, pagination);
+
+      // Exit logging
+      this.logger.log(
+        `[${requestId}] EXIT: GET /deals/active - Returned ${result.data.length} active deals (total: ${result.total})`,
+        this.context,
+      );
+
+      return result;
+    } catch (error) {
+      this.logger.error(
+        `[${requestId}] ERROR: GET /deals/active failed - ${error.message}`,
+        error.stack,
+        this.context,
+      );
+      throw error;
+    }
+  }
+
+  /**
    * GET /deals/:id
    * Get a single deal by ID
    */
