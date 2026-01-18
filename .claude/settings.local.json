@@ -8,7 +8,12 @@
       "Bash(do /bin/sleep 2)",
       "Bash(done)",
       "Bash(npm run build:*)",
-      "Bash(git.exe rm:*)"
+      "Bash(git.exe rm:*)",
+      "Bash(npm install:*)",
+      "Bash(git config:*)",
+      "Bash(git push:*)",
+      "Bash(curl:*)",
+      "Bash(git credential-manager:*)"
     ]
   }
 }

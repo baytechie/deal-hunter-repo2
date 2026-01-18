@@ -28,12 +28,10 @@ import dummyDataProvider from "./providers/dummyDataProvider";
 
 function App() {
   return (
-    <BrowserRouter>
-      <GitHubBanner />
+    <BrowserRouter>      
       <RefineKbarProvider>
         <ColorModeContextProvider>
-          <AntdApp>
-            <DevtoolsProvider>
+          <AntdApp>            
               <Refine
                 dataProvider={dummyDataProvider}
                 notificationProvider={useNotificationProvider}
@@ -82,10 +80,8 @@ function App() {
                 </Routes>
                 <RefineKbar />
                 <UnsavedChangesNotifier />
-                <DocumentTitleHandler />
+                <DocumentTitleHandler handler={() => "Deal Hunter - Admin"} />
               </Refine>
-              <DevtoolsPanel />
-            </DevtoolsProvider>
           </AntdApp>
         </ColorModeContextProvider>
       </RefineKbarProvider>
