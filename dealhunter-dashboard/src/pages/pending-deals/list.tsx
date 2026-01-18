@@ -7,7 +7,7 @@ import { Table, Space, Button, Tag, Modal, Input, message } from "antd";
 import { CheckOutlined, CloseOutlined, SyncOutlined } from "@ant-design/icons";
 import { useState } from "react";
 
-const API_URL = "http://localhost:3000";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 const getToken = () => localStorage.getItem("refine-auth");
 
