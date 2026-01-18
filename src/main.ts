@@ -14,8 +14,14 @@ async function bootstrap() {
   const logger = app.get(LoggerService);
 
   // Enable CORS for Flutter web app and admin panel
+  // Include local network IP for mobile WiFi access
   app.enableCors({
-    origin: ['http://localhost:3001', 'http://localhost:5173', 'http://localhost:5174', 'http://localhost:8080', 'http://localhost:8081', 'http://localhost:8085', 'http://localhost:8086'],
+    origin: [
+      'http://localhost:3001', 'http://localhost:5173', 'http://localhost:5174',
+      'http://localhost:8080', 'http://localhost:8081', 'http://localhost:8085',
+      'http://localhost:8086', 'http://localhost:8090', 'http://localhost:8095',
+      'http://10.204.110.213:8095', 'http://10.204.110.213:8080', 'http://10.204.110.213:3001',
+    ],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,

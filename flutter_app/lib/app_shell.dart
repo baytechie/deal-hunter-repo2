@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:money_saver_deals/features/deals/presentation/pages/home_feed_page.dart';
-import 'package:money_saver_deals/features/categories/presentation/pages/categories_page.dart';
+import 'package:money_saver_deals/features/flip/presentation/pages/flip_feed_page.dart';
 import 'package:money_saver_deals/features/saved/presentation/pages/saved_deals_page.dart';
 import 'package:money_saver_deals/features/profile/presentation/pages/profile_page.dart';
 
@@ -9,10 +9,10 @@ import 'package:money_saver_deals/features/profile/presentation/pages/profile_pa
 final selectedTabProvider = StateProvider<int>((ref) => 0);
 
 /// Main App Shell with Bottom Navigation
-/// 
+///
 /// Provides the main navigation structure for the app with 4 main tabs:
-/// - Feed (Deals list)
-/// - Categories (Browse by category)
+/// - Feed (Deals grid/list)
+/// - Flip (TikTok-style deal cards)
 /// - Saved (Wishlist)
 /// - Profile (User account)
 class AppShell extends ConsumerWidget {
@@ -27,7 +27,7 @@ class AppShell extends ConsumerWidget {
         index: selectedTab,
         children: const [
           HomeFeedPage(),
-          CategoriesPage(),
+          FlipFeedPage(),
           SavedDealsPage(),
           ProfilePage(),
         ],
@@ -46,9 +46,9 @@ class AppShell extends ConsumerWidget {
             label: 'Feed',
           ),
           NavigationDestination(
-            icon: Icon(Icons.dashboard),
-            selectedIcon: Icon(Icons.dashboard),
-            label: 'Categories',
+            icon: Icon(Icons.flip),
+            selectedIcon: Icon(Icons.flip),
+            label: 'Flip',
           ),
           NavigationDestination(
             icon: Icon(Icons.bookmark_border),

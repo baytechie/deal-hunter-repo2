@@ -9,20 +9,13 @@ import 'package:money_saver_deals/features/deals/presentation/providers/deals_pr
 
 /// Get the appropriate API base URL based on the platform
 String getApiBaseUrl() {
-  if (kIsWeb) {
-    // Flutter Web can use localhost
-    return 'http://localhost:3000';
-  } else if (defaultTargetPlatform == TargetPlatform.android) {
-    // Android emulator uses 10.0.2.2 as alias for host machine localhost
-    return 'http://10.0.2.2:3000';
-  } else if (defaultTargetPlatform == TargetPlatform.iOS) {
-    // iOS simulator can use localhost directly
-    return 'http://localhost:3000';
-  } else {
-    // For physical devices, use your computer's local network IP
-    // Update this IP to match your computer's network IP
-    return 'http://192.168.1.67:3000';
-  }
+  // Use local network IP for WiFi access from mobile devices
+  // UPDATE THIS IP if your network changes
+  const localNetworkIp = '10.204.110.213';
+
+  // For all platforms (including Android physical devices), use network IP
+  // This allows the app to connect to the backend over WiFi
+  return 'http://$localNetworkIp:3000';
 }
 
 /// Application wrapper with Riverpod provider setup

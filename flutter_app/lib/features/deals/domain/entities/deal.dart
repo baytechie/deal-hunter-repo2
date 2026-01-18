@@ -1,8 +1,44 @@
+/// Price trend data for deal analysis
+///
+/// Contains historical price information to help users decide
+/// whether to buy now or wait.
+class PriceTrend {
+  /// Percentage change from average (negative means lower than avg)
+  final double percentChange;
+
+  /// Average price over the tracking period
+  final double averagePrice;
+
+  /// Human-readable trend description (e.g., "8% lower than avg")
+  final String trendDescription;
+
+  const PriceTrend({
+    required this.percentChange,
+    required this.averagePrice,
+    required this.trendDescription,
+  });
+
+  /// Check if current price is below average
+  bool get isBelowAverage => percentChange < 0;
+
+  PriceTrend copyWith({
+    double? percentChange,
+    double? averagePrice,
+    String? trendDescription,
+  }) {
+    return PriceTrend(
+      percentChange: percentChange ?? this.percentChange,
+      averagePrice: averagePrice ?? this.averagePrice,
+      trendDescription: trendDescription ?? this.trendDescription,
+    );
+  }
+}
+
 /// Flutter Deal Entity
-/// 
+///
 /// Represents a single deal in the domain layer.
 /// This is a pure data class with no dependencies on external frameworks.
-/// 
+///
 /// Why: Entities are the core business objects that represent concepts in the domain.
 /// They should be independent of any framework or implementation details.
 class Deal {
@@ -48,6 +84,32 @@ class Deal {
   /// When the deal was last updated
   final DateTime updatedAt;
 
+  // ============ NEW FIELDS FOR FLIP CARD DESIGN ============
+
+  /// Coupon code if available (e.g., "SAVE20NOW")
+  final String? couponCode;
+
+  /// Retailer name (e.g., "AMAZON", "WALMART", "EBAY")
+  final String retailer;
+
+  /// AI verdict for the deal ("BUY NOW", "WAIT", "PASS")
+  final String? verdict;
+
+  /// Analysis of whether user should wait for better price
+  final String? shouldYouWaitAnalysis;
+
+  /// Price trend data for historical analysis
+  final PriceTrend? priceTrend;
+
+  /// Bullet point features/highlights of the product
+  final List<String> bulletPoints;
+
+  /// Number of likes/upvotes
+  final int likes;
+
+  /// Number of comments
+  final int comments;
+
   /// Constructor with all required parameters
   const Deal({
     required this.id,
@@ -64,6 +126,15 @@ class Deal {
     required this.category,
     required this.createdAt,
     required this.updatedAt,
+    // New fields for flip card
+    this.couponCode,
+    this.retailer = 'AMAZON',
+    this.verdict,
+    this.shouldYouWaitAnalysis,
+    this.priceTrend,
+    this.bulletPoints = const [],
+    this.likes = 0,
+    this.comments = 0,
   });
 
   /// Calculate the savings amount
@@ -80,7 +151,7 @@ class Deal {
   }
 
   /// Copy constructor for immutability patterns
-  /// 
+  ///
   /// Allows creating a new instance with some properties changed
   Deal copyWith({
     String? id,
@@ -97,6 +168,14 @@ class Deal {
     String? category,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? couponCode,
+    String? retailer,
+    String? verdict,
+    String? shouldYouWaitAnalysis,
+    PriceTrend? priceTrend,
+    List<String>? bulletPoints,
+    int? likes,
+    int? comments,
   }) {
     return Deal(
       id: id ?? this.id,
@@ -113,6 +192,14 @@ class Deal {
       category: category ?? this.category,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      couponCode: couponCode ?? this.couponCode,
+      retailer: retailer ?? this.retailer,
+      verdict: verdict ?? this.verdict,
+      shouldYouWaitAnalysis: shouldYouWaitAnalysis ?? this.shouldYouWaitAnalysis,
+      priceTrend: priceTrend ?? this.priceTrend,
+      bulletPoints: bulletPoints ?? this.bulletPoints,
+      likes: likes ?? this.likes,
+      comments: comments ?? this.comments,
     );
   }
 
