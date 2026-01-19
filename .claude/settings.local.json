@@ -60,7 +60,11 @@
       "mcp__render__update_environment_variables",
       "Bash(python3:*)",
       "mcp__render__list_logs",
-      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkNDc4MGQ2ZC00OGVhLTQ4OTgtOGYyMy00YTAzMThhYTA5MjMiLCJlbWFpbCI6ImFkbWluQGRlYWxodW50ZXIuY29tIiwibmFtZSI6IkFkbWluIiwiaWF0IjoxNzY4ODAxMDY5LCJleHAiOjE3Njg4ODc0Njl9.wmxc4Cg3nfG-SpPV_062rvj_YljVY0ccMTA-xHCT_X4\")"
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkNDc4MGQ2ZC00OGVhLTQ4OTgtOGYyMy00YTAzMThhYTA5MjMiLCJlbWFpbCI6ImFkbWluQGRlYWxodW50ZXIuY29tIiwibmFtZSI6IkFkbWluIiwiaWF0IjoxNzY4ODAxMDY5LCJleHAiOjE3Njg4ODc0Njl9.wmxc4Cg3nfG-SpPV_062rvj_YljVY0ccMTA-xHCT_X4\")",
+      "Bash(timeout /t 30 /nobreak)",
+      "WebFetch(domain:admin.huntdeals.app)",
+      "mcp__render__create_postgres",
+      "mcp__render__get_postgres"
     ]
   }
 }

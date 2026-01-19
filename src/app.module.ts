@@ -15,11 +15,36 @@ import { PendingDeal } from './modules/pending-deals/entities/pending-deal.entit
 import * as path from 'path';
 import * as fs from 'fs';
 
-// Ensure data directory exists for SQLite
+// Ensure data directory exists for SQLite (local development only)
 const dataDir = path.join(process.cwd(), 'data');
-if (!fs.existsSync(dataDir)) {
+if (!process.env.DATABASE_URL && !fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
 }
+
+// Determine database configuration based on DATABASE_URL
+const getDatabaseConfig = () => {
+  if (process.env.DATABASE_URL) {
+    // PostgreSQL for production (Render)
+    return {
+      type: 'postgres' as const,
+      url: process.env.DATABASE_URL,
+      entities: [Deal, AdminUser, PendingDeal],
+      synchronize: true,
+      ssl: {
+        rejectUnauthorized: false,
+      },
+      logging: process.env.NODE_ENV === 'development',
+    };
+  }
+  // SQLite for local development
+  return {
+    type: 'sqlite' as const,
+    database: process.env.DATABASE_PATH || path.join(dataDir, 'deals.db'),
+    entities: [Deal, AdminUser, PendingDeal],
+    synchronize: true,
+    logging: process.env.NODE_ENV === 'development',
+  };
+};
 
 @Module({
   imports: [
@@ -28,14 +53,8 @@ if (!fs.existsSync(dataDir)) {
       isGlobal: true,
       envFilePath: ['.env.local', '.env'],
     }),
-    // TypeORM configuration with SQLite
-    TypeOrmModule.forRoot({
-      type: 'sqlite',
-      database: process.env.DATABASE_PATH || path.join(dataDir, 'deals.db'),
-      entities: [Deal, AdminUser, PendingDeal],
-      synchronize: true, // Auto-sync schema (consider disabling in production with migrations)
-      logging: process.env.NODE_ENV === 'development',
-    }),
+    // TypeORM configuration - PostgreSQL in production, SQLite locally
+    TypeOrmModule.forRoot(getDatabaseConfig()),
     SharedModule,
     DealsModule,
     AuthModule,
