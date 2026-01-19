@@ -1,5 +1,6 @@
 # Flutter project structure
 build/
+!build/web/
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
