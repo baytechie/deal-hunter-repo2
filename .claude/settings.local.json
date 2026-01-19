@@ -65,7 +65,8 @@
       "WebFetch(domain:admin.huntdeals.app)",
       "mcp__render__create_postgres",
       "mcp__render__get_postgres",
-      "mcp__render__query_render_postgres"
+      "mcp__render__query_render_postgres",
+      "mcp__render__update_static_site"
     ]
   }
 }
