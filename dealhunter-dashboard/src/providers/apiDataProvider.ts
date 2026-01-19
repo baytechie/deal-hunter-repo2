@@ -1,7 +1,7 @@
 import type { DataProvider } from "@refinedev/core";
 
-// FIXME: Hardcoded API URL because Vite env vars aren't being picked up in Render build
-const API_URL = import.meta.env.VITE_API_URL || "https://api.huntdeals.app";
+// Hardcoded API URL for production
+const API_URL = "https://api.huntdeals.app";
 
 // Get token from localStorage
 const getToken = (): string | null => {
