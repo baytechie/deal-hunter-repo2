@@ -51,9 +51,11 @@ const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
 
 export const apiDataProvider: DataProvider = {
   getList: async ({ resource, pagination, filters, sorters: _sorters }) => {
-    // Note: pagination in refine v5+ uses pageSize, not current
-    const current = (pagination as any)?.current ?? 1;
+    // Refine v5 uses 'currentPage' instead of 'current' for pagination
+    const currentPage = pagination?.currentPage ?? 1;
     const pageSize = pagination?.pageSize ?? 10;
+
+    log.debug("Pagination params", { currentPage, pageSize });
 
     // Map resource names to API endpoints
     let endpoint = resource;
@@ -63,7 +65,7 @@ export const apiDataProvider: DataProvider = {
 
     // Build query params
     const params = new URLSearchParams();
-    params.append("page", String(current));
+    params.append("page", String(currentPage));
     params.append("limit", String(pageSize));
 
     // Apply filters
@@ -76,7 +78,7 @@ export const apiDataProvider: DataProvider = {
     }
 
     const url = `${API_URL}/${endpoint}?${params.toString()}`;
-    log.info("Fetching list", { resource, page: current, pageSize });
+    log.info("Fetching list", { resource, page: currentPage, pageSize });
     const result = await fetchWithAuth(url);
 
     // Handle paginated response from NestJS
