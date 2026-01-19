@@ -159,6 +159,8 @@ class DealCardFront extends StatelessWidget {
             ? Image.network(
                 deal.imageUrl,
                 fit: BoxFit.contain,
+                cacheWidth: 500,
+                cacheHeight: 500,
                 loadingBuilder: (context, child, loadingProgress) {
                   if (loadingProgress == null) return child;
                   return Center(

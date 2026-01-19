@@ -21,7 +21,7 @@ export class AffiliateService {
    * Amazon Associate tag for tracking and revenue attribution
    * Format: YOUR_ASSOCIATE_ID-20 (the -20 suffix is standard for Amazon)
    */
-  private readonly AMAZON_TAG = process.env.AMAZON_ASSOCIATE_TAG || 'moneysaverdeals-20';
+  private readonly AMAZON_TAG = process.env.AMAZON_ASSOCIATE_TAG || 'lockdeal-20';
 
   /**
    * Regex patterns for validating Amazon URLs
@@ -48,7 +48,7 @@ export class AffiliateService {
    * 
    * @example
    * tagUrl('https://amazon.com/dp/B001234567')
-   * // Returns: 'https://amazon.com/dp/B001234567?tag=moneysaverdeals-20'
+   * // Returns: 'https://amazon.com/dp/B001234567?tag=lockdeal-20'
    */
   tagUrl(originalUrl: string): string {
     const context = `${this.context}.tagUrl`;

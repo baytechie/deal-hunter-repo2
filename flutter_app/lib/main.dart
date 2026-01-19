@@ -15,13 +15,8 @@ String getApiBaseUrl() {
     return apiBaseUrl;
   }
 
-  // Use local network IP for WiFi access from mobile devices during development
-  // UPDATE THIS IP if your network changes
-  const localNetworkIp = '10.204.110.213';
-
-  // For all platforms (including Android physical devices), use network IP
-  // This allows the app to connect to the backend over WiFi
-  return 'http://$localNetworkIp:3000';
+  // Default to production API for testing
+  return 'https://api.huntdeals.app';
 }
 
 /// Application wrapper with Riverpod provider setup

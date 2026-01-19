@@ -46,8 +46,8 @@ class AppShell extends ConsumerWidget {
             label: 'Feed',
           ),
           NavigationDestination(
-            icon: Icon(Icons.flip),
-            selectedIcon: Icon(Icons.flip),
+            icon: Icon(Icons.play_circle_outline),
+            selectedIcon: Icon(Icons.play_circle),
             label: 'Flip',
           ),
           NavigationDestination(

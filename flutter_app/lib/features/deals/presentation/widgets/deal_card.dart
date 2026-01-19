@@ -4,6 +4,7 @@ import 'package:money_saver_deals/features/deals/domain/entities/deal.dart';
 import 'package:money_saver_deals/core/providers/service_providers.dart';
 import 'package:money_saver_deals/features/saved/presentation/providers/saved_deals_provider.dart';
 
+
 /// Deal Card Widget - Displays a single deal in the grid
 /// 
 /// Layout:
@@ -51,6 +52,8 @@ class DealCard extends ConsumerWidget {
                               deal.imageUrl,
                               fit: BoxFit.cover,
                               width: double.infinity,
+                              cacheWidth: 300,
+                              cacheHeight: 300,
                               loadingBuilder: (context, child, loadingProgress) {
                                 if (loadingProgress == null) return child;
                                 return Center(
@@ -67,6 +70,7 @@ class DealCard extends ConsumerWidget {
                                 );
                               },
                               errorBuilder: (context, error, stackTrace) {
+                                debugPrint('[DealCard] Image load error: $error');
                                 return Center(
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,

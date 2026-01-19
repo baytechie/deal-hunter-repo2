@@ -53,54 +53,36 @@ class _FlipFeedPageState extends ConsumerState<FlipFeedPage> {
 
   Widget _buildHeader(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      color: Colors.white,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Logo/Title
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF4CAF50), Color(0xFF8BC34A)],
-                  ),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(
-                  Icons.local_offer,
-                  color: Colors.white,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 12),
-              const Text(
-                'Flip Deals',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
+          // Logo and Title - matches Feed page header
+          const Icon(
+            Icons.local_offer,
+            color: Color(0xFF10B981),
+            size: 28,
           ),
-
-          // Refresh button
+          const SizedBox(width: 8),
+          const Text(
+            'Deal Hunter',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF10B981),
+            ),
+          ),
+          const Spacer(),
+          // Notification Bell - matches Feed page
           IconButton(
+            icon: const Icon(
+              Icons.notifications_outlined,
+              color: Colors.grey,
+              size: 24,
+            ),
             onPressed: () {
-              ref.read(flipFeedProvider.notifier).loadDeals();
+              // Navigate to notifications
             },
-            icon: Icon(Icons.refresh, color: Colors.grey[700]),
           ),
         ],
       ),
