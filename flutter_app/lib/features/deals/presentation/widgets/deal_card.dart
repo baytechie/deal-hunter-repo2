@@ -40,9 +40,9 @@ class DealCard extends ConsumerWidget {
           borderRadius: BorderRadius.circular(AppRadius.xl),
           child: Column(
             children: [
-              // Section A: Image (Flex 11 of 20)
+              // Section A: Image (Flex 10 of 20 - more compact)
               Flexible(
-                flex: 11,
+                flex: 10,
                 child: Stack(
                   children: [
                     // Background image
@@ -102,12 +102,12 @@ class DealCard extends ConsumerWidget {
                 ),
               ),
 
-              // Section B: Content (Flex 9 of 20)
+              // Section B: Content (Flex 10 of 20 - balanced)
               Flexible(
-                flex: 9,
+                flex: 10,
                 child: Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(AppSpacing.md),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -359,7 +359,7 @@ class DealCard extends ConsumerWidget {
     );
   }
 
-  /// Build price section with current and original price
+  /// Build price section with current and original price (larger fonts)
   Widget _buildPriceSection() {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -367,14 +367,26 @@ class DealCard extends ConsumerWidget {
       children: [
         Text(
           '\$${deal.price.toStringAsFixed(2)}',
-          style: AppTypography.priceLarge,
+          style: const TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            color: AppColors.primary,
+            letterSpacing: -0.5,
+          ),
         ),
-        const SizedBox(width: 6),
+        const SizedBox(width: 8),
         if (deal.originalPrice > deal.price)
           Flexible(
             child: Text(
               '\$${deal.originalPrice.toStringAsFixed(2)}',
-              style: AppTypography.priceOriginal,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textDisabled,
+                decoration: TextDecoration.lineThrough,
+                decorationColor: AppColors.textDisabled,
+                decorationThickness: 2,
+              ),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -382,68 +394,112 @@ class DealCard extends ConsumerWidget {
     );
   }
 
-  /// Build savings callout badge
+  /// Build savings callout badge with thumbs up/down buttons
   Widget _buildSavingsCallout() {
     final savings = deal.originalPrice - deal.price;
-    if (savings <= 0) {
-      // Show engagement row instead if no savings
-      return _buildEngagementRow();
-    }
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: AppColors.primarySurface,
-        borderRadius: BorderRadius.circular(AppRadius.xs),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(
-            Icons.savings_outlined,
-            size: 12,
-            color: AppColors.primary,
-          ),
-          const SizedBox(width: 4),
-          Text(
-            'Save \$${savings.toStringAsFixed(2)}',
-            style: const TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-              color: AppColors.primary,
+    return Row(
+      children: [
+        // Savings badge (larger)
+        if (savings > 0)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: AppColors.primarySurface,
+              borderRadius: BorderRadius.circular(AppRadius.sm),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.savings_outlined,
+                  size: 16,
+                  color: AppColors.primary,
+                ),
+                const SizedBox(width: 5),
+                Text(
+                  'Save \$${savings.toStringAsFixed(2)}',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.primary,
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
+        const Spacer(),
+        // Thumbs up/down buttons
+        _buildVoteButtons(),
+      ],
     );
   }
 
-  /// Build engagement row with likes
-  Widget _buildEngagementRow() {
+  /// Build thumbs up and thumbs down vote buttons
+  Widget _buildVoteButtons() {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(
-          Icons.thumb_up_outlined,
-          size: 14,
-          color: AppColors.textMuted,
-        ),
-        const SizedBox(width: 4),
-        Text(
-          '${deal.likes}',
-          style: const TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textMuted,
+        // Thumbs up button
+        GestureDetector(
+          onTap: () {
+            HapticFeedback.lightImpact();
+            // TODO: Implement vote up functionality
+          },
+          child: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: AppColors.primarySurface,
+              borderRadius: BorderRadius.circular(AppRadius.sm),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.thumb_up_rounded,
+                  size: 16,
+                  color: AppColors.primary,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '${deal.likes > 0 ? deal.likes : ""}',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primary,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-        const SizedBox(width: 12),
-        const Icon(
-          Icons.thumb_down_outlined,
-          size: 14,
-          color: AppColors.textMuted,
+        const SizedBox(width: 8),
+        // Thumbs down button
+        GestureDetector(
+          onTap: () {
+            HapticFeedback.lightImpact();
+            // TODO: Implement vote down functionality
+          },
+          child: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceVariant,
+              borderRadius: BorderRadius.circular(AppRadius.sm),
+            ),
+            child: const Icon(
+              Icons.thumb_down_rounded,
+              size: 16,
+              color: AppColors.textMuted,
+            ),
+          ),
         ),
       ],
     );
+  }
+
+  /// Build engagement row with vote buttons (for when there are no savings)
+  Widget _buildEngagementRow() {
+    return _buildVoteButtons();
   }
 
   /// Build promo code section with copy functionality
