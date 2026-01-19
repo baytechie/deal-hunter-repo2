@@ -40,17 +40,24 @@ export const PendingDealList = () => {
           Authorization: `Bearer ${getToken()}`,
         },
         body: JSON.stringify({
+          keywords: "deals discounts sale",
           category: "Electronics",
           itemCount: 10,
-          minDiscountPercent: 10,
+          minDiscountPercent: 15,
         }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Sync failed");
+      }
 
       const result = await response.json();
       message.success(`Synced: ${result.created} new deals, ${result.skipped} skipped`);
       window.location.reload();
-    } catch (error) {
-      message.error("Failed to sync deals");
+    } catch (error: any) {
+      console.error("Sync error:", error);
+      message.error(error.message || "Failed to sync deals");
     }
     setSyncing(false);
   };
