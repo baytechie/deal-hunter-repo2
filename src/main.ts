@@ -14,21 +14,17 @@ async function bootstrap() {
   const logger = app.get(LoggerService);
 
   // Enable CORS for Flutter web app and admin panel
-  // Include local network IP for mobile WiFi access and production domains
+  // Production domains only
   app.enableCors({
     origin: [
       // Production domains
       'https://www.huntdeals.app',
       'https://huntdeals.app',
       'https://admin.huntdeals.app',
+      'https://api.huntdeals.app',
       // Render deployment URLs
       'https://dealhunter-admin.onrender.com',
-      // Local development
-      'http://localhost:3001', 'http://localhost:5173', 'http://localhost:5174',
-      'http://localhost:8080', 'http://localhost:8081', 'http://localhost:8085',
-      'http://localhost:8086', 'http://localhost:8090', 'http://localhost:8095',
-      'http://localhost:9000', 'http://localhost:9001', 'http://localhost:9005', 'http://localhost:9010', 'http://localhost:9015', 'http://localhost:9020',
-      'http://10.204.110.213:8095', 'http://10.204.110.213:8080', 'http://10.204.110.213:3001',
+      'https://dealhunter-pwa.onrender.com',
     ],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
