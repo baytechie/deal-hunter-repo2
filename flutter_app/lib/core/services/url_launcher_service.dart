@@ -22,12 +22,6 @@ class UrlLauncherService {
   /// Constructor with dependency injection
   UrlLauncherService({required this.analyticsService});
 
-  /// Amazon Store app package ID for Android
-  static const String _amazonAppPackage = 'com.amazon.venezuala';
-
-  /// Amazon app URL schemes for iOS
-  static const String _amazonIosUrlScheme = 'amazon://';
-
   /// Regular expression to detect Amazon URLs
   /// Matches: amazon.com, amazon.co.uk, amazon.de, etc.
   static final RegExp _amazonUrlRegex = RegExp(

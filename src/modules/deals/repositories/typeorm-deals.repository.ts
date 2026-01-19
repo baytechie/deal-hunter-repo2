@@ -5,9 +5,6 @@ import {
   FindOptionsWhere,
   MoreThanOrEqual,
   LessThanOrEqual,
-  MoreThan,
-  IsNull,
-  Or,
 } from 'typeorm';
 import { Deal } from '../entities/deal.entity';
 import {
