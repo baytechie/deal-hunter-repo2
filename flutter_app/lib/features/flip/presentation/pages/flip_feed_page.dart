@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:money_saver_deals/app_shell.dart';
+import 'package:money_saver_deals/features/deals/domain/entities/deal.dart';
 import 'package:money_saver_deals/features/flip/presentation/providers/flip_feed_provider.dart';
 import 'package:money_saver_deals/features/flip/presentation/widgets/flip_card_widget.dart';
 import 'package:money_saver_deals/features/saved/presentation/providers/saved_deals_provider.dart';
@@ -25,13 +27,36 @@ class _FlipFeedPageState extends ConsumerState<FlipFeedPage> {
     super.initState();
     // Load deals when page initializes
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(flipFeedProvider.notifier).loadDeals();
+      _initializeFlipFeed();
     });
+  }
+
+  /// Initialize flip feed - load deals and navigate to selected deal if any
+  Future<void> _initializeFlipFeed() async {
+    final selectedDeal = ref.read(selectedDealForFlipProvider);
+
+    if (selectedDeal != null) {
+      // Clear the selected deal to avoid re-navigating on tab switches
+      ref.read(selectedDealForFlipProvider.notifier).state = null;
+      // Load deals and scroll to the selected one
+      await ref.read(flipFeedProvider.notifier).loadDealsAndScrollTo(selectedDeal.id);
+    } else {
+      // Normal initialization
+      ref.read(flipFeedProvider.notifier).loadDeals();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final flipFeedState = ref.watch(flipFeedProvider);
+
+    // Listen for selected deal changes (when user taps card from Feed/Saved)
+    ref.listen<Deal?>(selectedDealForFlipProvider, (previous, next) {
+      if (next != null) {
+        ref.read(selectedDealForFlipProvider.notifier).state = null;
+        ref.read(flipFeedProvider.notifier).loadDealsAndScrollTo(next.id);
+      }
+    });
 
     return Scaffold(
       backgroundColor: Colors.grey[100],

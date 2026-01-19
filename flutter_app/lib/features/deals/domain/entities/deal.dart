@@ -89,6 +89,9 @@ class Deal {
   /// Coupon code if available (e.g., "SAVE20NOW")
   final String? couponCode;
 
+  /// Promo description (e.g., "Save 32% with code 8B67WSYJ, through 2/18")
+  final String? promoDescription;
+
   /// Retailer name (e.g., "AMAZON", "WALMART", "EBAY")
   final String retailer;
 
@@ -128,6 +131,7 @@ class Deal {
     required this.updatedAt,
     // New fields for flip card
     this.couponCode,
+    this.promoDescription,
     this.retailer = 'AMAZON',
     this.verdict,
     this.shouldYouWaitAnalysis,
@@ -169,6 +173,7 @@ class Deal {
     DateTime? createdAt,
     DateTime? updatedAt,
     String? couponCode,
+    String? promoDescription,
     String? retailer,
     String? verdict,
     String? shouldYouWaitAnalysis,
@@ -193,6 +198,7 @@ class Deal {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       couponCode: couponCode ?? this.couponCode,
+      promoDescription: promoDescription ?? this.promoDescription,
       retailer: retailer ?? this.retailer,
       verdict: verdict ?? this.verdict,
       shouldYouWaitAnalysis: shouldYouWaitAnalysis ?? this.shouldYouWaitAnalysis,

@@ -3,7 +3,7 @@ import {
   useTable,
   ImageField,
 } from "@refinedev/antd";
-import { Table, Space, Button, Tag, Modal, Input, message } from "antd";
+import { Table, Space, Button, Tag, Modal, Input, Checkbox, Form, message } from "antd";
 import { CheckOutlined, CloseOutlined, SyncOutlined } from "@ant-design/icons";
 import { useState } from "react";
 
@@ -12,11 +12,28 @@ const API_URL = "https://api.huntdeals.app";
 
 const getToken = () => localStorage.getItem("refine-auth");
 
+interface ApprovalFormData {
+  customTitle: string;
+  couponCode: string;
+  promoDescription: string;
+  isHot: boolean;
+  isFeatured: boolean;
+}
+
 export const PendingDealList = () => {
   const [syncing, setSyncing] = useState(false);
   const [rejectModalVisible, setRejectModalVisible] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
   const [selectedDealId, setSelectedDealId] = useState<string | null>(null);
+  const [approveModalVisible, setApproveModalVisible] = useState(false);
+  const [selectedDealForApproval, setSelectedDealForApproval] = useState<any>(null);
+  const [approvalForm, setApprovalForm] = useState<ApprovalFormData>({
+    customTitle: "",
+    couponCode: "",
+    promoDescription: "",
+    isHot: false,
+    isFeatured: false,
+  });
 
   const { tableProps } = useTable({
     resource: "pending-deals",
@@ -63,10 +80,26 @@ export const PendingDealList = () => {
     setSyncing(false);
   };
 
-  // Approve a deal
-  const handleApprove = async (id: string) => {
+  // Open approve modal
+  const openApproveModal = (record: any) => {
+    setSelectedDealForApproval(record);
+    setApprovalForm({
+      customTitle: "",
+      couponCode: "",
+      promoDescription: "",
+      isHot: false,
+      isFeatured: false,
+    });
+    setApproveModalVisible(true);
+  };
+
+  // Submit approval
+  const handleApprove = async () => {
+    if (!selectedDealForApproval) return;
+
     try {
       const token = getToken();
+      const id = selectedDealForApproval.id;
       console.log("Approving deal:", id, "Token:", token ? "present" : "missing");
 
       const response = await fetch(`${API_URL}/pending-deals/${id}/approve`, {
@@ -75,13 +108,21 @@ export const PendingDealList = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ isHot: false, isFeatured: false }),
+        body: JSON.stringify({
+          customTitle: approvalForm.customTitle || undefined,
+          couponCode: approvalForm.couponCode || undefined,
+          promoDescription: approvalForm.promoDescription || undefined,
+          isHot: approvalForm.isHot,
+          isFeatured: approvalForm.isFeatured,
+        }),
       });
 
       console.log("Approve response status:", response.status);
 
       if (response.ok) {
         message.success("Deal approved and published!");
+        setApproveModalVisible(false);
+        setSelectedDealForApproval(null);
         window.location.reload();
       } else {
         const errorData = await response.json().catch(() => ({}));
@@ -225,7 +266,7 @@ export const PendingDealList = () => {
                 type="primary"
                 size="small"
                 icon={<CheckOutlined />}
-                onClick={() => handleApprove(record.id)}
+                onClick={() => openApproveModal(record)}
                 disabled={record.status !== "PENDING"}
               >
                 Approve
@@ -258,6 +299,71 @@ export const PendingDealList = () => {
           onChange={(e) => setRejectReason(e.target.value)}
           rows={3}
         />
+      </Modal>
+
+      <Modal
+        title="Approve Deal"
+        open={approveModalVisible}
+        onOk={handleApprove}
+        onCancel={() => {
+          setApproveModalVisible(false);
+          setSelectedDealForApproval(null);
+        }}
+        okText="Approve & Publish"
+        width={600}
+      >
+        {selectedDealForApproval && (
+          <Form layout="vertical">
+            <Form.Item label="Original Title">
+              <div style={{ padding: "8px", background: "#f5f5f5", borderRadius: "4px" }}>
+                {selectedDealForApproval.title}
+              </div>
+            </Form.Item>
+
+            <Form.Item label="Custom Title (optional)">
+              <Input
+                placeholder="Leave empty to use original title"
+                value={approvalForm.customTitle}
+                onChange={(e) => setApprovalForm({ ...approvalForm, customTitle: e.target.value })}
+              />
+            </Form.Item>
+
+            <Form.Item label="Promo Code (optional)">
+              <Input
+                placeholder="e.g., 8B67WSYJ"
+                value={approvalForm.couponCode}
+                onChange={(e) => setApprovalForm({ ...approvalForm, couponCode: e.target.value })}
+                style={{ fontFamily: "monospace" }}
+              />
+            </Form.Item>
+
+            <Form.Item label="Promo Description (optional)">
+              <Input.TextArea
+                placeholder="e.g., Save 32% with code 8B67WSYJ, through 2/18"
+                value={approvalForm.promoDescription}
+                onChange={(e) => setApprovalForm({ ...approvalForm, promoDescription: e.target.value })}
+                rows={2}
+              />
+            </Form.Item>
+
+            <Form.Item>
+              <Space>
+                <Checkbox
+                  checked={approvalForm.isHot}
+                  onChange={(e) => setApprovalForm({ ...approvalForm, isHot: e.target.checked })}
+                >
+                  Mark as HOT 🔥
+                </Checkbox>
+                <Checkbox
+                  checked={approvalForm.isFeatured}
+                  onChange={(e) => setApprovalForm({ ...approvalForm, isFeatured: e.target.checked })}
+                >
+                  Featured Deal ⭐
+                </Checkbox>
+              </Space>
+            </Form.Item>
+          </Form>
+        )}
       </Modal>
     </List>
   );

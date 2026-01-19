@@ -52,9 +52,15 @@ export class PendingDeal {
   @Column({ type: 'varchar', length: 255, nullable: true })
   approvedBy: string | null;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'datetime', nullable: true })
   approvedAt: Date | null;
 
   @Column({ type: 'text', nullable: true })
   rejectionReason: string | null;
+
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  couponCode: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  promoDescription: string | null;
 }

@@ -170,6 +170,8 @@ export class PendingDealsService {
       isFeatured: dto.isFeatured || false,
       asin: pendingDeal.asin,
       pendingDealId: pendingDeal.id,
+      couponCode: dto.couponCode || pendingDeal.couponCode || null,
+      promoDescription: dto.promoDescription || pendingDeal.promoDescription || null,
     });
 
     const savedDeal = await this.dealRepository.save(deal);

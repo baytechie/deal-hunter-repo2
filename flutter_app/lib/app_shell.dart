@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:money_saver_deals/features/deals/domain/entities/deal.dart';
 import 'package:money_saver_deals/features/deals/presentation/pages/home_feed_page.dart';
 import 'package:money_saver_deals/features/flip/presentation/pages/flip_feed_page.dart';
 import 'package:money_saver_deals/features/saved/presentation/pages/saved_deals_page.dart';
@@ -7,6 +8,10 @@ import 'package:money_saver_deals/features/profile/presentation/pages/profile_pa
 
 /// Tab provider to manage which tab is currently selected
 final selectedTabProvider = StateProvider<int>((ref) => 0);
+
+/// Provider to hold a deal that should be shown in Flip tab
+/// When set, FlipFeedPage will scroll to show this deal
+final selectedDealForFlipProvider = StateProvider<Deal?>((ref) => null);
 
 /// Main App Shell with Bottom Navigation
 ///

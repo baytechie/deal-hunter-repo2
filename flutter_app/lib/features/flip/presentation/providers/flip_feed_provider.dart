@@ -162,6 +162,33 @@ class FlipFeedNotifier extends StateNotifier<FlipFeedState> {
   void resetAllCards() {
     state = state.copyWith(flippedCards: {});
   }
+
+  /// Load deals and scroll to a specific deal by ID
+  Future<void> loadDealsAndScrollTo(String dealId) async {
+    if (state.deals.isEmpty) {
+      await loadDeals();
+    }
+
+    // Find the index of the target deal
+    final index = state.deals.indexWhere((d) => d.id == dealId);
+    if (index >= 0 && index < state.deals.length) {
+      state = state.copyWith(currentIndex: index);
+      // Jump to the page without animation for immediate feedback
+      if (pageController.hasClients) {
+        pageController.jumpToPage(index);
+      }
+    }
+  }
+
+  /// Jump to a specific page index
+  void jumpToPage(int index) {
+    if (index >= 0 && index < state.deals.length) {
+      state = state.copyWith(currentIndex: index);
+      if (pageController.hasClients) {
+        pageController.jumpToPage(index);
+      }
+    }
+  }
 }
 
 /// Provider for the flip feed

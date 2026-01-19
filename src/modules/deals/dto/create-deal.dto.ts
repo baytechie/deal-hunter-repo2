@@ -51,4 +51,13 @@ export class CreateDealDto {
   @IsString()
   @MaxLength(100)
   category: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  couponCode?: string;
+
+  @IsOptional()
+  @IsString()
+  promoDescription?: string;
 }

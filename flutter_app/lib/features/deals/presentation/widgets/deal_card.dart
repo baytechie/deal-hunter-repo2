@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:money_saver_deals/features/deals/domain/entities/deal.dart';
-import 'package:money_saver_deals/core/providers/service_providers.dart';
 import 'package:money_saver_deals/features/saved/presentation/providers/saved_deals_provider.dart';
+import 'package:money_saver_deals/app_shell.dart';
 
 
 /// Deal Card Widget - Displays a single deal in the grid
@@ -230,44 +231,40 @@ class DealCard extends ConsumerWidget {
                       ],
                     ),
 
-                    // Metadata Row
-                    Text(
-                      'Store • 2h ago',
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: Color(0xFF6B7280),
-                      ),
-                    ),
+                    // Promo Code Section (if available)
+                    if (deal.couponCode != null || deal.promoDescription != null)
+                      _buildPromoSection(context),
 
-                    // Engagement Row
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.thumb_up_outlined,
-                              size: 14,
-                              color: Color(0xFF6B7280),
-                            ),
-                            const SizedBox(width: 4),
-                            const Text(
-                              '125',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
+                    // Engagement Row (only show if no promo)
+                    if (deal.couponCode == null && deal.promoDescription == null)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.thumb_up_outlined,
+                                size: 14,
                                 color: Color(0xFF6B7280),
                               ),
-                            ),
-                          ],
-                        ),
-                        const Icon(
-                          Icons.thumb_down_outlined,
-                          size: 14,
-                          color: Color(0xFF6B7280),
-                        ),
-                      ],
-                    ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${deal.likes}',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF6B7280),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const Icon(
+                            Icons.thumb_down_outlined,
+                            size: 14,
+                            color: Color(0xFF6B7280),
+                          ),
+                        ],
+                      ),
                   ],
                 ),
               ),
@@ -278,23 +275,70 @@ class DealCard extends ConsumerWidget {
     );
   }
 
-  Future<void> _handleDealTap(BuildContext context, WidgetRef ref) async {
-    final urlLauncher = ref.read(urlLauncherServiceProvider);
-    await urlLauncher.launchDeal(
-      url: deal.affiliateLink,
-      dealId: deal.id,
-      dealTitle: deal.title,
-      onWebViewRequired: (url) {
-        // Handle webview if needed
-      },
-      onError: (error) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(error),
-            backgroundColor: Colors.red,
-          ),
-        );
-      },
+  /// Build promo code section with copy functionality
+  Widget _buildPromoSection(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _copyPromoCode(context),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+        decoration: BoxDecoration(
+          color: const Color(0xFFDCFCE7), // Light green
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(color: const Color(0xFF10B981), width: 1),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.local_offer,
+              size: 12,
+              color: Color(0xFF10B981),
+            ),
+            const SizedBox(width: 4),
+            Expanded(
+              child: Text(
+                deal.couponCode ?? 'PROMO',
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'monospace',
+                  color: Color(0xFF047857),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const Icon(
+              Icons.copy,
+              size: 12,
+              color: Color(0xFF10B981),
+            ),
+          ],
+        ),
+      ),
     );
+  }
+
+  /// Copy promo code to clipboard
+  void _copyPromoCode(BuildContext context) {
+    final code = deal.couponCode ?? deal.promoDescription ?? '';
+    if (code.isNotEmpty) {
+      Clipboard.setData(ClipboardData(text: code));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Copied: $code'),
+          duration: const Duration(seconds: 2),
+          backgroundColor: const Color(0xFF10B981),
+        ),
+      );
+    }
+  }
+
+  /// Navigate to Flip tab and show this deal
+  void _handleDealTap(BuildContext context, WidgetRef ref) {
+    // Set the selected deal for Flip page
+    ref.read(selectedDealForFlipProvider.notifier).state = deal;
+    // Navigate to Flip tab (index 1)
+    ref.read(selectedTabProvider.notifier).state = 1;
   }
 }

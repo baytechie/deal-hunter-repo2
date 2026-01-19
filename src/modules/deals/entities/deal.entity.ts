@@ -38,7 +38,7 @@ export class Deal {
   @Column({ type: 'varchar', length: 1000 })
   affiliateLink: string;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'datetime', nullable: true })
   expiryDate: Date;
 
   @Column({ type: 'boolean', default: false })
@@ -55,6 +55,12 @@ export class Deal {
 
   @Column({ type: 'uuid', nullable: true })
   pendingDealId: string | null;
+
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  couponCode: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  promoDescription: string | null;
 
   @CreateDateColumn()
   createdAt: Date;

@@ -57,6 +57,7 @@ class DealModel extends Deal {
     required super.updatedAt,
     // New fields for flip card
     super.couponCode,
+    super.promoDescription,
     super.retailer,
     super.verdict,
     super.shouldYouWaitAnalysis,
@@ -109,6 +110,7 @@ class DealModel extends Deal {
       updatedAt: DateTime.parse(json['updatedAt'] as String),
       // New fields for flip card
       couponCode: json['couponCode'] as String?,
+      promoDescription: json['promoDescription'] as String?,
       retailer: json['retailer'] as String? ?? 'AMAZON',
       verdict: json['verdict'] as String?,
       shouldYouWaitAnalysis: json['shouldYouWaitAnalysis'] as String?,
@@ -164,6 +166,7 @@ class DealModel extends Deal {
       'updatedAt': updatedAt.toIso8601String(),
       // New fields for flip card
       'couponCode': couponCode,
+      'promoDescription': promoDescription,
       'retailer': retailer,
       'verdict': verdict,
       'shouldYouWaitAnalysis': shouldYouWaitAnalysis,
@@ -199,6 +202,7 @@ class DealModel extends Deal {
         createdAt: createdAt,
         updatedAt: updatedAt,
         couponCode: couponCode,
+        promoDescription: promoDescription,
         retailer: retailer,
         verdict: verdict,
         shouldYouWaitAnalysis: shouldYouWaitAnalysis,
