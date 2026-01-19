@@ -229,6 +229,16 @@ export class PendingDealsService {
   }
 
   /**
+   * Delete all pending deals from the database
+   */
+  async clearAll(): Promise<number> {
+    this.logger.warn('Clearing all pending deals from database', this.context);
+    const count = await this.pendingDealsRepository.clearAll();
+    this.logger.log(`Cleared ${count} pending deals from database`, this.context);
+    return count;
+  }
+
+  /**
    * Get statistics by status
    */
   async getStats(): Promise<PendingDealStats> {

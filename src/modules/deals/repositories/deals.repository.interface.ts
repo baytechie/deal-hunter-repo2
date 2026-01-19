@@ -82,6 +82,11 @@ export interface IDealsRepository {
   delete(id: string): Promise<boolean>;
 
   /**
+   * Delete all deals from the database
+   */
+  clearAll(): Promise<number>;
+
+  /**
    * Get all unique categories
    */
   getCategories(): Promise<string[]>;

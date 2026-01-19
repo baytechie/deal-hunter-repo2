@@ -8,6 +8,7 @@ import { DealsModule } from './modules/deals/deals.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { AmazonModule } from './modules/amazon/amazon.module';
 import { PendingDealsModule } from './modules/pending-deals/pending-deals.module';
+import { AdminModule } from './modules/admin/admin.module';
 import { Deal } from './modules/deals/entities/deal.entity';
 import { AdminUser } from './modules/auth/entities/admin-user.entity';
 import { PendingDeal } from './modules/pending-deals/entities/pending-deal.entity';
@@ -40,6 +41,7 @@ if (!fs.existsSync(dataDir)) {
     AuthModule,
     AmazonModule,
     PendingDealsModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -189,13 +189,24 @@ export class DealsService {
    */
   async delete(id: string): Promise<void> {
     this.logger.debug(`Deleting deal: ${id}`, this.context);
-    
+
     const deleted = await this.dealsRepository.delete(id);
     if (!deleted) {
       throw new NotFoundException(`Deal with ID ${id} not found`);
     }
 
     this.logger.log(`Deal deleted successfully: ${id}`, this.context);
+  }
+
+  /**
+   * Delete all deals from the database
+   * Used for resetting the database before fresh sync
+   */
+  async clearAll(): Promise<number> {
+    this.logger.warn('Clearing all deals from database', this.context);
+    const count = await this.dealsRepository.clearAll();
+    this.logger.log(`Cleared ${count} deals from database`, this.context);
+    return count;
   }
 
   /**

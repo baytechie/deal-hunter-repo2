@@ -106,6 +106,11 @@ export class TypeOrmDealsRepository implements IDealsRepository {
     return (result.affected ?? 0) > 0;
   }
 
+  async clearAll(): Promise<number> {
+    const result = await this.dealRepository.delete({});
+    return result.affected ?? 0;
+  }
+
   async getCategories(): Promise<string[]> {
     const result = await this.dealRepository
       .createQueryBuilder('deal')

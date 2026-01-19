@@ -62,5 +62,7 @@ export interface IPendingDealsRepository {
 
   delete(id: string): Promise<boolean>;
 
+  clearAll(): Promise<number>;
+
   getStats(): Promise<PendingDealStats>;
 }

@@ -89,6 +89,11 @@ export class TypeOrmPendingDealsRepository implements IPendingDealsRepository {
     return (result.affected ?? 0) > 0;
   }
 
+  async clearAll(): Promise<number> {
+    const result = await this.pendingDealRepository.delete({});
+    return result.affected ?? 0;
+  }
+
   async getStats(): Promise<PendingDealStats> {
     const pending = await this.pendingDealRepository.count({ where: { status: 'PENDING' } });
     const approved = await this.pendingDealRepository.count({ where: { status: 'APPROVED' } });
