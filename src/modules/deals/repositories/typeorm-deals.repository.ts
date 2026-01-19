@@ -107,7 +107,11 @@ export class TypeOrmDealsRepository implements IDealsRepository {
   }
 
   async clearAll(): Promise<number> {
-    const result = await this.dealRepository.delete({});
+    const result = await this.dealRepository
+      .createQueryBuilder()
+      .delete()
+      .from(Deal)
+      .execute();
     return result.affected ?? 0;
   }
 

@@ -90,7 +90,11 @@ export class TypeOrmPendingDealsRepository implements IPendingDealsRepository {
   }
 
   async clearAll(): Promise<number> {
-    const result = await this.pendingDealRepository.delete({});
+    const result = await this.pendingDealRepository
+      .createQueryBuilder()
+      .delete()
+      .from(PendingDeal)
+      .execute();
     return result.affected ?? 0;
   }
 
