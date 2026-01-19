@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:money_saver_deals/core/theme/app_theme.dart';
+import 'package:money_saver_deals/core/widgets/app_header.dart';
 import 'package:money_saver_deals/features/saved/presentation/providers/saved_deals_provider.dart';
 import 'package:money_saver_deals/features/deals/presentation/widgets/deal_card.dart';
 import 'package:money_saver_deals/app_shell.dart';
@@ -13,16 +15,13 @@ class SavedDealsPage extends ConsumerWidget {
     final savedDeals = ref.watch(savedDealsProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F4F6),
-      appBar: AppBar(
-        title: const Text('Saved Deals'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
+      backgroundColor: AppColors.background,
+      appBar: AppHeaderBar(
+        title: 'Saved Deals',
         actions: savedDeals.isNotEmpty
             ? [
                 IconButton(
-                  icon: const Icon(Icons.delete_outline),
+                  icon: const Icon(Icons.delete_outline, color: AppColors.textMuted),
                   onPressed: () {
                     showDialog(
                       context: context,
@@ -41,7 +40,7 @@ class SavedDealsPage extends ConsumerWidget {
                             },
                             child: const Text(
                               'Clear',
-                              style: TextStyle(color: Colors.red),
+                              style: TextStyle(color: AppColors.error),
                             ),
                           ),
                         ],
@@ -54,67 +53,72 @@ class SavedDealsPage extends ConsumerWidget {
       ),
       body: savedDeals.isEmpty
           ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.bookmark_outline,
-                    size: 80,
-                    color: Colors.grey[300],
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'No saved deals yet',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey[700],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Save your favorite deals by tapping the heart icon',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[500],
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  ElevatedButton(
-                    onPressed: () {
-                      // Navigate to feed tab
-                      ref.read(selectedTabProvider.notifier).state = 0;
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF10B981),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 32,
-                        vertical: 14,
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: AppColors.primarySurface,
+                        shape: BoxShape.circle,
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                      child: const Icon(
+                        Icons.bookmark_outline_rounded,
+                        size: 56,
+                        color: AppColors.primary,
                       ),
                     ),
-                    child: const Text(
-                      'Find Deals',
+                    const SizedBox(height: 24),
+                    const Text(
+                      'No saved deals yet',
                       style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Save your favorite deals by tapping the heart icon',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        // Navigate to feed tab
+                        ref.read(selectedTabProvider.notifier).state = 0;
+                      },
+                      icon: const Icon(Icons.search_rounded),
+                      label: const Text('Find Deals'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 14,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.lg),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             )
           : GridView.builder(
-              padding: const EdgeInsets.all(6),
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                childAspectRatio: 0.75,
-                mainAxisSpacing: 6,
-                crossAxisSpacing: 6,
+                childAspectRatio: 0.68,
+                mainAxisSpacing: 14,
+                crossAxisSpacing: 12,
               ),
               itemCount: savedDeals.length,
               itemBuilder: (context, index) => DealCard(deal: savedDeals[index]),

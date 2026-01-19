@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:money_saver_deals/app_shell.dart';
+import 'package:money_saver_deals/core/theme/app_theme.dart';
+import 'package:money_saver_deals/core/widgets/app_header.dart';
 import 'package:money_saver_deals/features/deals/domain/entities/deal.dart';
 import 'package:money_saver_deals/features/flip/presentation/providers/flip_feed_provider.dart';
 import 'package:money_saver_deals/features/flip/presentation/widgets/flip_card_widget.dart';
@@ -59,12 +61,12 @@ class _FlipFeedPageState extends ConsumerState<FlipFeedPage> {
     });
 
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Column(
           children: [
-            // Header
-            _buildHeader(context),
+            // Header - using shared AppHeader component
+            const AppHeader(pageTitle: 'Flip'),
 
             // Main content
             Expanded(
@@ -72,44 +74,6 @@ class _FlipFeedPageState extends ConsumerState<FlipFeedPage> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      color: Colors.white,
-      child: Row(
-        children: [
-          // Logo and Title - matches Feed page header
-          const Icon(
-            Icons.local_offer,
-            color: Color(0xFF10B981),
-            size: 28,
-          ),
-          const SizedBox(width: 8),
-          const Text(
-            'Deal Hunter',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF10B981),
-            ),
-          ),
-          const Spacer(),
-          // Notification Bell - matches Feed page
-          IconButton(
-            icon: const Icon(
-              Icons.notifications_outlined,
-              color: Colors.grey,
-              size: 24,
-            ),
-            onPressed: () {
-              // Navigate to notifications
-            },
-          ),
-        ],
       ),
     );
   }

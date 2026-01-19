@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:money_saver_deals/core/theme/app_theme.dart';
+import 'package:money_saver_deals/core/widgets/app_header.dart';
 import 'package:money_saver_deals/features/deals/presentation/providers/deals_provider.dart';
 import 'package:money_saver_deals/features/deals/presentation/widgets/deal_card.dart';
-import 'package:money_saver_deals/features/notifications/presentation/pages/notifications_page.dart';
 import 'package:money_saver_deals/app_shell.dart';
 
 final selectedCategoryFilterProvider = StateProvider<String?>((ref) => null);
@@ -93,107 +93,32 @@ class _HomeFeedPageState extends ConsumerState<HomeFeedPage> {
 
   /// Build the header with logo, search, and filters
   Widget _buildHeader() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // Top Bar: Logo + Notification
-          _buildTopBar(),
-          const SizedBox(height: 12),
-
-          // Search Bar
-          _buildSearchBar(),
-          const SizedBox(height: 14),
-
-          // Filter Pills
-          _buildFilterPills(),
-        ],
-      ),
-    );
-  }
-
-  /// Build the top bar with logo and notification
-  Widget _buildTopBar() {
-    return Row(
+    return Column(
       children: [
-        // Logo and Title - Clickable to go home
-        GestureDetector(
-          onTap: () {
+        // App Header with logo and notifications
+        AppHeader(
+          onLogoTap: () {
             HapticFeedback.selectionClick();
             ref.read(selectedTabProvider.notifier).state = 0;
             ref.read(selectedCategoryFilterProvider.notifier).state = null;
             ref.read(dealsProvider.notifier).fetchAllDeals();
             _scrollToTop();
           },
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppColors.primary, AppColors.primaryLight],
-                  ),
-                  borderRadius: BorderRadius.circular(AppRadius.md),
-                ),
-                child: const Text(
-                  '\$',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              ShaderMask(
-                shaderCallback: (bounds) => const LinearGradient(
-                  colors: [AppColors.primary, AppColors.primaryLight],
-                ).createShader(bounds),
-                child: const Text(
-                  'Hunt \$Deals',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ],
-          ),
         ),
-        const Spacer(),
 
-        // Notification Bell
+        // Search and Filters section
         Container(
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            shape: BoxShape.circle,
-            boxShadow: AppShadows.subtleShadow,
-          ),
-          child: IconButton(
-            icon: const Icon(
-              Icons.notifications_outlined,
-              color: AppColors.textMuted,
-              size: 24,
-            ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const NotificationsPage(),
-                ),
-              );
-            },
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+          color: AppColors.background,
+          child: Column(
+            children: [
+              // Search Bar
+              _buildSearchBar(),
+              const SizedBox(height: 14),
+
+              // Filter Pills
+              _buildFilterPills(),
+            ],
           ),
         ),
       ],
