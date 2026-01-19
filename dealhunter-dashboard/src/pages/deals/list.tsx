@@ -30,6 +30,12 @@ export const DealList = () => {
         dataSource={dataSource}
         rowKey="id"
         loading={isLoading}
+        pagination={{
+          ...tableProps.pagination,
+          showSizeChanger: true,
+          showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} deals`,
+          pageSizeOptions: ["10", "20", "50"],
+        }}
       >
         <Table.Column
           dataIndex="imageUrl"
