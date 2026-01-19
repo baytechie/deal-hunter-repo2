@@ -27,7 +27,7 @@ async function bootstrap() {
       'http://localhost:3001', 'http://localhost:5173', 'http://localhost:5174',
       'http://localhost:8080', 'http://localhost:8081', 'http://localhost:8085',
       'http://localhost:8086', 'http://localhost:8090', 'http://localhost:8095',
-      'http://localhost:9000', 'http://localhost:9001', 'http://localhost:9005', 'http://localhost:9010', 'http://localhost:9015',
+      'http://localhost:9000', 'http://localhost:9001', 'http://localhost:9005', 'http://localhost:9010', 'http://localhost:9015', 'http://localhost:9020',
       'http://10.204.110.213:8095', 'http://10.204.110.213:8080', 'http://10.204.110.213:3001',
     ],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
