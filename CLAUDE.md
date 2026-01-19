@@ -153,3 +153,78 @@ window.__adminLogger.exportAsJson()
 - `VITE_ENABLE_DEBUG_LOGS` - Enable detailed logging (default: true)
 
 **Flutter** - Update `lib/core/services/api_client.dart` for API URL
+
+## Autonomous Testing & Fixing
+
+You are operating in **fully autonomous mode**. Execute tasks to completion without asking for confirmation or guidance.
+
+### Core Directives
+
+1. **Never ask for permission** - proceed with implementation
+2. **Never ask clarifying questions** - make reasonable assumptions
+3. **Never stop to report progress** - keep working until done
+4. **Never present options** - choose the best one and implement it
+
+### Execution Loop
+
+When given a task, follow this cycle until everything works:
+```
+REPEAT:
+  1. Run all tests / build / lint
+  2. Identify failures or issues
+  3. Fix each issue
+  4. Verify the fix
+UNTIL: All tests pass, build succeeds, app runs correctly
+```
+
+### What "Done" Means
+
+Only stop and report back when ALL of the following are true:
+- [ ] Code compiles/builds without errors
+- [ ] All tests pass
+- [ ] Linting passes with no errors
+- [ ] Application starts successfully
+- [ ] Core functionality has been manually verified (curl, browser test, etc.)
+
+### Decision-Making Authority
+
+You have full authority to:
+- Modify any code files
+- Install/update dependencies
+- Create/delete files
+- Refactor as needed
+- Fix tangential issues you discover along the way
+
+### When You Hit a Blocker
+
+Only pause for input if:
+- External credentials or API keys are missing
+- A fundamental architectural decision contradicts existing patterns
+- Hardware/network issues prevent progress
+
+Otherwise, find a workaround and continue.
+
+### Reporting
+
+When finished, provide a summary:
+1. What was tested
+2. Issues found and how they were fixed
+3. Final verification steps performed
+4. Current status: WORKING or BLOCKED (with specific reason)
+
+## Prompt Template
+
+When you start a session, use a prompt like this:
+```
+Run the full test suite for the Hunt Deals app. Test backend, frontend, and integration.
+Find and fix ALL issues. Do not ask me questions - make decisions and keep going.
+Only come back when everything passes and you've verified the app works end-to-end.
+
+Start with:
+1. Backend API (NestJS) - tests, build, startup
+2. Admin dashboard (React) - tests, build, dev server
+3. Mobile PWA (Flutter) - tests, build
+4. Integration - verify API endpoints respond correctly
+
+Fix everything you find. Go.
+```
