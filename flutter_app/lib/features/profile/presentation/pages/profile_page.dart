@@ -151,8 +151,11 @@ class _ProfilePageState extends State<ProfilePage> {
                 // Email input
                 TextField(
                   controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  autocorrect: false,
                   decoration: InputDecoration(
-                    hintText: 'Email',
+                    labelText: 'Email',
+                    hintText: 'Enter your email address',
                     prefixIcon: const Icon(Icons.email_outlined),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -172,8 +175,10 @@ class _ProfilePageState extends State<ProfilePage> {
                 TextField(
                   controller: _passwordController,
                   obscureText: !_isPasswordVisible,
+                  autocorrect: false,
                   decoration: InputDecoration(
-                    hintText: 'Password',
+                    labelText: 'Password',
+                    hintText: 'Enter your password',
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -181,6 +186,9 @@ class _ProfilePageState extends State<ProfilePage> {
                             ? Icons.visibility
                             : Icons.visibility_off,
                       ),
+                      tooltip: _isPasswordVisible
+                          ? 'Hide password'
+                          : 'Show password',
                       onPressed: () {
                         setState(() {
                           _isPasswordVisible = !_isPasswordVisible;
@@ -250,8 +258,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       "Don't have an account? ",
                       style: TextStyle(color: Colors.grey[600]),
                     ),
-                    GestureDetector(
-                      onTap: () {
+                    TextButton(
+                      onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('Sign Up feature coming soon'),
@@ -259,6 +267,11 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                         );
                       },
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: const Size(48, 48),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
                       child: const Text(
                         'Sign Up',
                         style: TextStyle(

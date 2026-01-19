@@ -1,7 +1,11 @@
+import 'dart:async';
+import 'dart:ui';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:money_saver_deals/app_shell.dart';
+import 'package:money_saver_deals/core/services/logging_service.dart';
 import 'package:money_saver_deals/features/deals/data/datasources/api_client.dart';
 import 'package:money_saver_deals/features/deals/data/repositories/deals_repository_impl.dart';
 import 'package:money_saver_deals/features/deals/presentation/providers/deals_provider.dart';
@@ -18,32 +22,75 @@ String getApiBaseUrl() {
   return 'https://api.huntdeals.app';
 }
 
+/// Initialize global error handlers
+///
+/// Why: Captures all uncaught errors in the application for logging
+/// and crash reporting. This ensures no error goes unnoticed.
+///
+/// Three layers of error catching:
+/// 1. FlutterError.onError - Catches Flutter framework errors (rendering, layout, etc.)
+/// 2. PlatformDispatcher.instance.onError - Catches async errors from platform channels
+/// 3. runZonedGuarded - Catches any remaining uncaught errors in the Dart zone
+void _setupErrorHandlers() {
+  // 1. Handle Flutter framework errors (widget build errors, layout errors, etc.)
+  FlutterError.onError = (FlutterErrorDetails details) {
+    logger.logFlutterError(details);
+
+    // In debug mode, also print the error in the default way
+    // for visibility in the console with full formatting
+    FlutterError.presentError(details);
+  };
+
+  // 2. Handle platform dispatcher errors (async errors from platform channels)
+  PlatformDispatcher.instance.onError = (Object error, StackTrace stackTrace) {
+    logger.logPlatformError(error, stackTrace);
+
+    // Return true to indicate the error was handled
+    // Return false would crash the app in release mode
+    return true;
+  };
+}
+
 /// Application wrapper with Riverpod provider setup
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
+  // Use runZonedGuarded to catch any errors that slip through
+  // the Flutter and Platform error handlers
+  runZonedGuarded(
+    () {
+      // Ensure Flutter bindings are initialized before setting up error handlers
+      WidgetsFlutterBinding.ensureInitialized();
 
-  debugPrint('[main] Application starting');
+      // Setup global error handlers
+      _setupErrorHandlers();
 
-  final baseUrl = getApiBaseUrl();
-  debugPrint('[main] Using API base URL: $baseUrl');
+      logger.info('Application starting', context: 'main');
 
-  final dio = Dio();
-  final apiClient = ApiClient(
-    dio: dio,
-    baseUrl: baseUrl,
+      final baseUrl = getApiBaseUrl();
+      logger.info('Using API base URL: $baseUrl', context: 'main');
+
+      final dio = Dio();
+      final apiClient = ApiClient(
+        dio: dio,
+        baseUrl: baseUrl,
+      );
+      final repository = DealsRepositoryImpl(apiClient: apiClient);
+
+      runApp(
+        ProviderScope(
+          overrides: [
+            dealsRepositoryProvider.overrideWithValue(repository),
+          ],
+          child: const MoneySaverDealsApp(),
+        ),
+      );
+
+      logger.info('Application started successfully', context: 'main');
+    },
+    (Object error, StackTrace stackTrace) {
+      // This catches any errors that were not caught by Flutter's error handlers
+      logger.logZoneError(error, stackTrace);
+    },
   );
-  final repository = DealsRepositoryImpl(apiClient: apiClient);
-
-  runApp(
-    ProviderScope(
-      overrides: [
-        dealsRepositoryProvider.overrideWithValue(repository),
-      ],
-      child: const MoneySaverDealsApp(),
-    ),
-  );
-
-  debugPrint('[main] Application started successfully');
 }
 
 /// Main application widget

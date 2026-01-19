@@ -49,70 +49,83 @@ class DealCard extends ConsumerWidget {
                               topLeft: Radius.circular(8),
                               topRight: Radius.circular(8),
                             ),
-                            child: Image.network(
-                              deal.imageUrl,
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                              cacheWidth: 300,
-                              cacheHeight: 300,
-                              loadingBuilder: (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return Center(
-                                  child: CircularProgressIndicator(
-                                    value: loadingProgress.expectedTotalBytes != null
-                                        ? loadingProgress.cumulativeBytesLoaded /
-                                            loadingProgress.expectedTotalBytes!
-                                        : null,
-                                    strokeWidth: 2,
-                                    valueColor: const AlwaysStoppedAnimation<Color>(
-                                      Color(0xFF10B981),
+                            child: Semantics(
+                              label: 'Product image for ${deal.title}',
+                              image: true,
+                              child: Image.network(
+                                deal.imageUrl,
+                                fit: BoxFit.cover,
+                                width: double.infinity,
+                                cacheWidth: 300,
+                                cacheHeight: 300,
+                                semanticLabel: 'Product image for ${deal.title}',
+                                loadingBuilder: (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return Center(
+                                    child: CircularProgressIndicator(
+                                      value: loadingProgress.expectedTotalBytes != null
+                                          ? loadingProgress.cumulativeBytesLoaded /
+                                              loadingProgress.expectedTotalBytes!
+                                          : null,
+                                      strokeWidth: 2,
+                                      valueColor: const AlwaysStoppedAnimation<Color>(
+                                        Color(0xFF047857),
+                                      ),
                                     ),
-                                  ),
-                                );
-                              },
-                              errorBuilder: (context, error, stackTrace) {
-                                debugPrint('[DealCard] Image load error: $error');
-                                return Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.local_offer,
-                                        size: 36,
-                                        color: Colors.grey[400],
+                                  );
+                                },
+                                errorBuilder: (context, error, stackTrace) {
+                                  debugPrint('[DealCard] Image load error: $error');
+                                  return Center(
+                                    child: Semantics(
+                                      label: 'Image unavailable for ${deal.title}',
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.local_offer,
+                                            size: 36,
+                                            color: Colors.grey[400],
+                                            semanticLabel: 'Deal placeholder icon',
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            'Deal',
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color: Colors.grey[500],
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        'Deal',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: Colors.grey[500],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
+                                    ),
+                                  );
+                                },
+                              ),
                             ),
                           )
                         : Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.local_offer,
-                                  size: 36,
-                                  color: Colors.grey[400],
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Deal',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: Colors.grey[500],
+                            child: Semantics(
+                              label: 'No image available for ${deal.title}',
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.local_offer,
+                                    size: 36,
+                                    color: Colors.grey[400],
+                                    semanticLabel: 'Deal placeholder icon',
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Deal',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.grey[500],
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                   ),
@@ -142,39 +155,50 @@ class DealCard extends ConsumerWidget {
                       ),
                     ),
 
-                  // Heart Icon (Top Right)
+                  // Heart Icon (Top Right) - 48x48 touch target for accessibility
                   Positioned(
-                    top: 8,
-                    right: 8,
+                    top: 0,
+                    right: 0,
                     child: Consumer(
                       builder: (context, ref, _) {
                         final savedDeals = ref.watch(savedDealsProvider);
                         final isSaved = savedDeals.any((d) => d.id == deal.id);
-                        
-                        return GestureDetector(
-                          onTap: () {
-                            ref.read(savedDealsProvider.notifier).toggleSave(deal);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  isSaved 
-                                    ? '${deal.title} removed from saved' 
-                                    : '${deal.title} saved!',
+
+                        return Semantics(
+                          label: isSaved
+                              ? 'Remove ${deal.title} from saved deals'
+                              : 'Save ${deal.title} to saved deals',
+                          button: true,
+                          child: GestureDetector(
+                            onTap: () {
+                              ref.read(savedDealsProvider.notifier).toggleSave(deal);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    isSaved
+                                      ? '${deal.title} removed from saved'
+                                      : '${deal.title} saved!',
+                                  ),
+                                  duration: const Duration(seconds: 1),
                                 ),
-                                duration: const Duration(seconds: 1),
+                              );
+                            },
+                            child: Container(
+                              width: 48,
+                              height: 48,
+                              alignment: Alignment.center,
+                              child: Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.9),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  isSaved ? Icons.favorite : Icons.favorite_border,
+                                  size: 20,
+                                  color: isSaved ? Colors.red : Colors.grey,
+                                ),
                               ),
-                            );
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.9),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              isSaved ? Icons.favorite : Icons.favorite_border,
-                              size: 20,
-                              color: isSaved ? Colors.red : Colors.grey,
                             ),
                           ),
                         );
@@ -214,7 +238,7 @@ class DealCard extends ConsumerWidget {
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF10B981), // Green
+                            color: Color(0xFF047857), // Dark green for better contrast
                           ),
                         ),
                         const SizedBox(width: 6),

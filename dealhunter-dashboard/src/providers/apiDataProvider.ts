@@ -1,7 +1,10 @@
 import type { DataProvider } from "@refinedev/core";
+import { createContextLogger } from "../services/logger";
 
-// Hardcoded API URL for production
-const API_URL = "https://api.huntdeals.app";
+const log = createContextLogger('DataProvider');
+
+// Use environment variable for API URL with fallback for development
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 // Get token from localStorage
 const getToken = (): string | null => {
@@ -11,8 +14,7 @@ const getToken = (): string | null => {
 // Make authenticated request
 const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
   const token = getToken();
-  console.log("[apiDataProvider] Making request to:", url);
-  console.log("[apiDataProvider] Token present:", !!token);
+  log.debug("Making request", { url, tokenPresent: !!token });
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -30,19 +32,19 @@ const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
       credentials: "include",
     });
 
-    console.log("[apiDataProvider] Response status:", response.status);
+    log.debug("Response received", { url, status: response.status });
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ message: response.statusText }));
-      console.error("[apiDataProvider] Error:", error);
+      log.error("Request failed", { url, status: response.status, error });
       throw new Error(error.message || "Request failed");
     }
 
     const data = await response.json();
-    console.log("[apiDataProvider] Response data:", data);
+    log.debug("Response data", { url, dataType: Array.isArray(data) ? 'array' : typeof data });
     return data;
   } catch (err) {
-    console.error("[apiDataProvider] Fetch error:", err);
+    log.error("Fetch error", { url, error: err instanceof Error ? err.message : String(err) });
     throw err;
   }
 };
@@ -74,6 +76,7 @@ export const apiDataProvider: DataProvider = {
     }
 
     const url = `${API_URL}/${endpoint}?${params.toString()}`;
+    log.info("Fetching list", { resource, page: current, pageSize });
     const result = await fetchWithAuth(url);
 
     // Handle paginated response from NestJS
@@ -100,12 +103,14 @@ export const apiDataProvider: DataProvider = {
 
   getOne: async ({ resource, id }) => {
     const url = `${API_URL}/${resource}/${id}`;
+    log.info("Fetching one", { resource, id });
     const data = await fetchWithAuth(url);
     return { data };
   },
 
   create: async ({ resource, variables }) => {
     const url = `${API_URL}/${resource}`;
+    log.info("Creating resource", { resource });
     const data = await fetchWithAuth(url, {
       method: "POST",
       body: JSON.stringify(variables),
@@ -115,6 +120,7 @@ export const apiDataProvider: DataProvider = {
 
   update: async ({ resource, id, variables }) => {
     const url = `${API_URL}/${resource}/${id}`;
+    log.info("Updating resource", { resource, id });
     const data = await fetchWithAuth(url, {
       method: "PATCH",
       body: JSON.stringify(variables),
@@ -124,6 +130,7 @@ export const apiDataProvider: DataProvider = {
 
   deleteOne: async ({ resource, id }) => {
     const url = `${API_URL}/${resource}/${id}`;
+    log.info("Deleting resource", { resource, id });
     await fetchWithAuth(url, { method: "DELETE" });
     return { data: { id } as any };
   },
@@ -133,6 +140,7 @@ export const apiDataProvider: DataProvider = {
   // Custom methods for pending deals workflow
   custom: async ({ url, method, payload }) => {
     const fullUrl = url.startsWith("http") ? url : `${API_URL}${url}`;
+    log.info("Custom request", { url: fullUrl, method });
     const data = await fetchWithAuth(fullUrl, {
       method: method || "GET",
       body: payload ? JSON.stringify(payload) : undefined,
@@ -141,6 +149,7 @@ export const apiDataProvider: DataProvider = {
   },
 
   getMany: async ({ resource, ids }) => {
+    log.info("Fetching many", { resource, count: ids.length });
     const results = await Promise.all(
       ids.map((id) => fetchWithAuth(`${API_URL}/${resource}/${id}`))
     );
@@ -148,6 +157,7 @@ export const apiDataProvider: DataProvider = {
   },
 
   createMany: async ({ resource, variables }) => {
+    log.info("Creating many", { resource, count: variables.length });
     const results = await Promise.all(
       variables.map((item) =>
         fetchWithAuth(`${API_URL}/${resource}`, {
@@ -160,6 +170,7 @@ export const apiDataProvider: DataProvider = {
   },
 
   updateMany: async ({ resource, ids, variables }) => {
+    log.info("Updating many", { resource, count: ids.length });
     const results = await Promise.all(
       ids.map((id) =>
         fetchWithAuth(`${API_URL}/${resource}/${id}`, {
@@ -172,6 +183,7 @@ export const apiDataProvider: DataProvider = {
   },
 
   deleteMany: async ({ resource, ids }) => {
+    log.info("Deleting many", { resource, count: ids.length });
     await Promise.all(
       ids.map((id) =>
         fetchWithAuth(`${API_URL}/${resource}/${id}`, { method: "DELETE" })

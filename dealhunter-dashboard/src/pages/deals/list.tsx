@@ -34,8 +34,8 @@ export const DealList = () => {
         <Table.Column
           dataIndex="imageUrl"
           title="Image"
-          render={(value) => (
-            <ImageField value={value} width={60} style={{ borderRadius: 4 }} />
+          render={(value, record: any) => (
+            <ImageField value={value} width={60} style={{ borderRadius: 4 }} alt={record.title || "Deal image"} />
           )}
         />
         <Table.Column
@@ -52,7 +52,7 @@ export const DealList = () => {
           title="Price"
           render={(value, record: any) => (
             <Space direction="vertical" size={0}>
-              <Typography.Text strong style={{ color: "#52c41a" }}>
+              <Typography.Text strong style={{ color: "#2e7d32" }}>
                 {formatCurrency(parseFloat(value))}
               </Typography.Text>
               <Typography.Text type="secondary">
@@ -82,8 +82,9 @@ export const DealList = () => {
           dataIndex="affiliateLink"
           title="Link"
           render={(value) => (
-            <a href={value} target="_blank" rel="noopener noreferrer">
+            <a href={value} target="_blank" rel="noopener noreferrer" aria-label="View on Amazon (opens in new tab)">
               View on Amazon
+              <span className="sr-only"> (opens in new tab)</span>
             </a>
           )}
         />

@@ -241,8 +241,8 @@ export const PendingDealList = () => {
         <Table.Column
           dataIndex="imageUrl"
           title="Image"
-          render={(value) => (
-            <ImageField value={value} width={60} style={{ borderRadius: 4 }} />
+          render={(value, record: any) => (
+            <ImageField value={value} width={60} style={{ borderRadius: 4 }} alt={record.title || "Deal image"} />
           )}
         />
         <Table.Column
@@ -342,6 +342,7 @@ export const PendingDealList = () => {
           value={rejectReason}
           onChange={(e) => setRejectReason(e.target.value)}
           rows={3}
+          aria-label="Rejection reason"
         />
       </Modal>
 
@@ -386,6 +387,7 @@ export const PendingDealList = () => {
                 placeholder="Leave empty to use original title"
                 value={approvalForm.customTitle}
                 onChange={(e) => setApprovalForm({ ...approvalForm, customTitle: e.target.value })}
+                aria-label="Custom title for deal"
               />
             </Form.Item>
 
@@ -395,6 +397,7 @@ export const PendingDealList = () => {
                 value={approvalForm.couponCode}
                 onChange={(e) => setApprovalForm({ ...approvalForm, couponCode: e.target.value })}
                 style={{ fontFamily: "monospace" }}
+                aria-label="Promo code for deal"
               />
             </Form.Item>
 
@@ -404,6 +407,7 @@ export const PendingDealList = () => {
                 value={approvalForm.promoDescription}
                 onChange={(e) => setApprovalForm({ ...approvalForm, promoDescription: e.target.value })}
                 rows={2}
+                aria-label="Promo description for deal"
               />
             </Form.Item>
 
@@ -441,6 +445,7 @@ export const PendingDealList = () => {
               placeholder="e.g., deals discounts sale"
               value={syncConfig.keywords}
               onChange={(e) => setSyncConfig({ ...syncConfig, keywords: e.target.value })}
+              aria-label="Search keywords for Amazon sync"
             />
           </Form.Item>
 

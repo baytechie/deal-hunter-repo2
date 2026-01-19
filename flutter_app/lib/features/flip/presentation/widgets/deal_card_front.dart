@@ -81,8 +81,12 @@ class DealCardFront extends StatelessWidget {
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.local_fire_department,
-                          color: Colors.white, size: 16),
+                      Icon(
+                        Icons.local_fire_department,
+                        color: Colors.white,
+                        size: 16,
+                        semanticLabel: 'Hot deal fire icon',
+                      ),
                       SizedBox(width: 4),
                       Text(
                         'HOT DEAL',
@@ -115,32 +119,43 @@ class DealCardFront extends StatelessWidget {
             ],
           ),
 
-          // Right side: Heart button
-          GestureDetector(
-            onTap: onSaveToggle,
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
+          // Right side: Heart button - 48x48 touch target for accessibility
+          Semantics(
+            label: isSaved
+                ? 'Remove ${deal.title} from saved deals'
+                : 'Save ${deal.title} to saved deals',
+            button: true,
+            child: GestureDetector(
+              onTap: onSaveToggle,
+              child: Container(
+                width: 48,
+                height: 48,
+                alignment: Alignment.center,
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 200),
-                transitionBuilder: (child, animation) {
-                  return ScaleTransition(scale: animation, child: child);
-                },
-                child: Icon(
-                  isSaved ? Icons.favorite : Icons.favorite_border,
-                  key: ValueKey(isSaved),
-                  color: isSaved ? Colors.red : Colors.grey[600],
-                  size: 24,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    transitionBuilder: (child, animation) {
+                      return ScaleTransition(scale: animation, child: child);
+                    },
+                    child: Icon(
+                      isSaved ? Icons.favorite : Icons.favorite_border,
+                      key: ValueKey(isSaved),
+                      color: isSaved ? Colors.red : Colors.grey[600],
+                      size: 24,
+                    ),
+                  ),
                 ),
               ),
             ),

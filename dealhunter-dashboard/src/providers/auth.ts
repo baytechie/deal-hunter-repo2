@@ -1,12 +1,15 @@
 import type { AuthProvider } from "@refinedev/core";
 import { TOKEN_KEY } from "./constants";
+import { createContextLogger } from "../services/logger";
 
-// Hardcoded API URL for production
-const API_URL = "https://api.huntdeals.app";
+const log = createContextLogger('AuthProvider');
+
+// Use environment variable for API URL with fallback for development
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 export const authProvider: AuthProvider = {
   login: async ({ email, password }) => {
-    console.log("[authProvider] Login attempt for:", email);
+    log.info("Login attempt", { email });
     try {
       const response = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
@@ -17,11 +20,11 @@ export const authProvider: AuthProvider = {
         body: JSON.stringify({ email, password }),
       });
 
-      console.log("[authProvider] Login response status:", response.status);
+      log.debug("Login response", { status: response.status });
 
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
-        console.error("[authProvider] Login failed:", error);
+        log.error("Login failed", { status: response.status, error });
         return {
           success: false,
           error: {
@@ -32,7 +35,7 @@ export const authProvider: AuthProvider = {
       }
 
       const data = await response.json();
-      console.log("[authProvider] Login successful, storing token");
+      log.info("Login successful", { userId: data.user?.id });
 
       // Store the JWT token
       localStorage.setItem(TOKEN_KEY, data.access_token);
@@ -40,14 +43,14 @@ export const authProvider: AuthProvider = {
 
       // Verify token was stored
       const storedToken = localStorage.getItem(TOKEN_KEY);
-      console.log("[authProvider] Token stored successfully:", !!storedToken);
+      log.debug("Token stored", { success: !!storedToken });
 
       return {
         success: true,
         redirectTo: "/",
       };
     } catch (error) {
-      console.error("[authProvider] Login error:", error);
+      log.error("Login error", { error: error instanceof Error ? error.message : String(error) });
       return {
         success: false,
         error: {
@@ -59,6 +62,7 @@ export const authProvider: AuthProvider = {
   },
 
   logout: async () => {
+    log.info("Logout");
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem("user");
     return {
@@ -69,7 +73,7 @@ export const authProvider: AuthProvider = {
 
   check: async () => {
     const token = localStorage.getItem(TOKEN_KEY);
-    console.log("[authProvider] Checking auth, token present:", !!token);
+    log.debug("Checking auth", { tokenPresent: !!token });
 
     if (token) {
       // Optionally verify token with backend
@@ -81,19 +85,19 @@ export const authProvider: AuthProvider = {
           credentials: "include",
         });
 
-        console.log("[authProvider] Profile check response:", response.status);
+        log.debug("Profile check response", { status: response.status });
 
         if (response.ok) {
           return { authenticated: true };
         } else {
           // Token invalid, clear it
-          console.log("[authProvider] Token invalid, clearing");
+          log.warn("Token invalid, clearing");
           localStorage.removeItem(TOKEN_KEY);
           localStorage.removeItem("user");
         }
       } catch (err) {
         // Network error, clear token
-        console.error("[authProvider] Profile check error:", err);
+        log.error("Profile check error", { error: err instanceof Error ? err.message : String(err) });
         localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem("user");
       }
@@ -128,11 +132,13 @@ export const authProvider: AuthProvider = {
 
   onError: async (error) => {
     if (error.status === 401) {
+      log.warn("Unauthorized error, logging out");
       return {
         logout: true,
         redirectTo: "/login",
       };
     }
+    log.error("Auth error", { error });
     return { error };
   },
 };

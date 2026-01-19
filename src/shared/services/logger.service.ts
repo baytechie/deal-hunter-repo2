@@ -2,6 +2,7 @@ import { Injectable, LoggerService as NestLoggerService } from '@nestjs/common';
 import * as winston from 'winston';
 import * as fs from 'fs';
 import * as path from 'path';
+import { getCorrelationId } from '../middleware/correlation-id.middleware';
 
 @Injectable()
 export class LoggerService implements NestLoggerService {
@@ -59,12 +60,32 @@ export class LoggerService implements NestLoggerService {
   }
 
   /**
+   * Get the current correlation ID from AsyncLocalStorage.
+   * Returns undefined if called outside of a request context.
+   */
+  getCorrelationId(): string | undefined {
+    return getCorrelationId();
+  }
+
+  /**
+   * Build common metadata including correlation ID.
+   * This ensures all log entries include the correlation ID when available.
+   */
+  private buildMeta(context?: string): Record<string, unknown> {
+    const correlationId = this.getCorrelationId();
+    return {
+      context,
+      ...(correlationId && { correlationId }),
+    };
+  }
+
+  /**
    * Log a message at 'info' level
    * @param message - The message to log
    * @param context - Optional context/module name
    */
   log(message: string, context?: string): void {
-    this.logger.info(message, { context });
+    this.logger.info(message, this.buildMeta(context));
   }
 
   /**
@@ -74,8 +95,9 @@ export class LoggerService implements NestLoggerService {
    * @param context - Optional context/module name
    */
   error(message: string, trace?: string, context?: string): void {
+    const meta = this.buildMeta(context);
     this.logger.error(message, {
-      context,
+      ...meta,
       stack: trace,
     });
   }
@@ -86,7 +108,7 @@ export class LoggerService implements NestLoggerService {
    * @param context - Optional context/module name
    */
   warn(message: string, context?: string): void {
-    this.logger.warn(message, { context });
+    this.logger.warn(message, this.buildMeta(context));
   }
 
   /**
@@ -95,7 +117,7 @@ export class LoggerService implements NestLoggerService {
    * @param context - Optional context/module name
    */
   debug(message: string, context?: string): void {
-    this.logger.debug(message, { context });
+    this.logger.debug(message, this.buildMeta(context));
   }
 
   /**
@@ -104,16 +126,21 @@ export class LoggerService implements NestLoggerService {
    * @param context - Optional context/module name
    */
   verbose(message: string, context?: string): void {
-    this.logger.verbose(message, { context });
+    this.logger.verbose(message, this.buildMeta(context));
   }
 
   /**
-   * Log structured data with additional metadata
+   * Log structured data with additional metadata.
+   * Correlation ID is automatically included.
    * @param level - Log level
    * @param message - The message
    * @param meta - Additional metadata object
    */
-  logWithMeta(level: string, message: string, meta: Record<string, any>): void {
-    this.logger.log(level, message, meta);
+  logWithMeta(level: string, message: string, meta: Record<string, unknown>): void {
+    const correlationId = this.getCorrelationId();
+    this.logger.log(level, message, {
+      ...meta,
+      ...(correlationId && { correlationId }),
+    });
   }
 }
