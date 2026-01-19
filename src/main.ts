@@ -46,8 +46,11 @@ async function bootstrap() {
   // Apply global exception filter with custom logger
   app.useGlobalFilters(new AllExceptionsFilter(logger));
 
-  // Seed sample deals if database is empty
-  await seedDeals(app, logger);
+  // Seed sample deals only in development (disabled in production)
+  // FIXME: Remove this entirely once real Amazon deals are in use
+  if (process.env.NODE_ENV !== 'production') {
+    await seedDeals(app, logger);
+  }
 
   // Seed default admin user
   await seedAdminUser(app, logger);

@@ -65,48 +65,67 @@ export const PendingDealList = () => {
   // Approve a deal
   const handleApprove = async (id: string) => {
     try {
+      const token = getToken();
+      console.log("Approving deal:", id, "Token:", token ? "present" : "missing");
+
       const response = await fetch(`${API_URL}/pending-deals/${id}/approve`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${getToken()}`,
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ isHot: false }),
+        body: JSON.stringify({ isHot: false, isFeatured: false }),
       });
+
+      console.log("Approve response status:", response.status);
 
       if (response.ok) {
         message.success("Deal approved and published!");
         window.location.reload();
       } else {
-        message.error("Failed to approve deal");
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Approve error:", errorData);
+        message.error(errorData.message || "Failed to approve deal");
       }
-    } catch (error) {
-      message.error("Failed to approve deal");
+    } catch (error: any) {
+      console.error("Approve exception:", error);
+      message.error(error.message || "Failed to approve deal");
     }
   };
 
   // Reject a deal
   const handleReject = async () => {
-    if (!selectedDealId || !rejectReason) return;
+    if (!selectedDealId || !rejectReason) {
+      message.warning("Please enter a rejection reason");
+      return;
+    }
 
     try {
+      const token = getToken();
+      console.log("Rejecting deal:", selectedDealId);
+
       const response = await fetch(`${API_URL}/pending-deals/${selectedDealId}/reject`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${getToken()}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ reason: rejectReason }),
       });
+
+      console.log("Reject response status:", response.status);
 
       if (response.ok) {
         message.success("Deal rejected");
         window.location.reload();
       } else {
-        message.error("Failed to reject deal");
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Reject error:", errorData);
+        message.error(errorData.message || "Failed to reject deal");
       }
-    } catch (error) {
-      message.error("Failed to reject deal");
+    } catch (error: any) {
+      console.error("Reject exception:", error);
+      message.error(error.message || "Failed to reject deal");
     }
 
     setRejectModalVisible(false);
