@@ -34,6 +34,7 @@ export interface AmazonSearchParams {
   minPrice?: number;
   maxPrice?: number;
   minSavingPercent?: number;
+  itemPage?: number; // 1-10, for pagination through results
 }
 
 /**

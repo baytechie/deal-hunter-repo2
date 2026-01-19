@@ -114,7 +114,7 @@ export class AmazonPaapiService implements OnModuleInit {
       const requestParameters = {
         Keywords: params.keywords || 'deals',
         SearchIndex: searchIndex,
-        ItemCount: params.itemCount || 10,
+        ItemCount: Math.min(params.itemCount || 10, 10), // Amazon max is 10 per request
         Resources: [
           'ItemInfo.Title',
           'ItemInfo.Features',
@@ -123,6 +123,7 @@ export class AmazonPaapiService implements OnModuleInit {
           'Images.Primary.Large',
           'BrowseNodeInfo.BrowseNodes',
         ],
+        ...(params.itemPage && { ItemPage: params.itemPage }), // Pagination (1-10)
         ...(params.minPrice && { MinPrice: params.minPrice * 100 }), // Convert to cents
         ...(params.maxPrice && { MaxPrice: params.maxPrice * 100 }),
         ...(params.minSavingPercent && { MinSavingPercent: params.minSavingPercent }),
@@ -151,6 +152,68 @@ export class AmazonPaapiService implements OnModuleInit {
 
       throw error;
     }
+  }
+
+  /**
+   * Search for items with pagination support.
+   * Amazon PAAPI returns max 10 items per request, so we paginate to get more.
+   * Uses ItemPage parameter (1-10) to fetch up to 100 items total.
+   */
+  async searchItemsWithPagination(
+    params: AmazonSearchParams,
+    totalItems: number,
+  ): Promise<AmazonProduct[]> {
+    const allProducts: AmazonProduct[] = [];
+    const pagesNeeded = Math.min(Math.ceil(totalItems / 10), 10); // Max 10 pages
+
+    this.logger.log(
+      `Fetching ${totalItems} items using ${pagesNeeded} pages`,
+      this.context,
+    );
+
+    for (let page = 1; page <= pagesNeeded; page++) {
+      try {
+        this.logger.debug(`Fetching page ${page} of ${pagesNeeded}`, this.context);
+
+        const products = await this.searchItems({
+          ...params,
+          itemPage: page,
+          itemCount: 10, // Always request max per page
+        });
+
+        allProducts.push(...products);
+
+        // If we got fewer than 10 items, there are no more results
+        if (products.length < 10) {
+          this.logger.debug(
+            `Page ${page} returned ${products.length} items, stopping pagination`,
+            this.context,
+          );
+          break;
+        }
+
+        // Stop if we have enough
+        if (allProducts.length >= totalItems) {
+          break;
+        }
+      } catch (error) {
+        this.logger.error(
+          `Failed to fetch page ${page}: ${error.message}`,
+          error.stack,
+          this.context,
+        );
+        // Continue with what we have
+        break;
+      }
+    }
+
+    const result = allProducts.slice(0, totalItems);
+    this.logger.log(
+      `Pagination complete: fetched ${result.length} items`,
+      this.context,
+    );
+
+    return result;
   }
 
   /**

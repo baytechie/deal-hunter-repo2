@@ -49,13 +49,18 @@ export class PendingDealsService {
   ): Promise<{ created: number; skipped: number; total: number }> {
     this.logger.log(`Starting Amazon sync with params: ${JSON.stringify(dto)}`, this.context);
 
-    const products = await this.amazonPaapiService.searchItems({
+    const itemCount = dto.itemCount || 10;
+    const searchParams = {
       keywords: dto.keywords,
       category: dto.category,
       sortBy: dto.sortBy,
-      itemCount: dto.itemCount || 10,
       minSavingPercent: dto.minDiscountPercent,
-    });
+    };
+
+    // Use pagination for requests > 10 items (Amazon max per request is 10)
+    const products = itemCount > 10
+      ? await this.amazonPaapiService.searchItemsWithPagination(searchParams, itemCount)
+      : await this.amazonPaapiService.searchItems({ ...searchParams, itemCount });
 
     let created = 0;
     let skipped = 0;

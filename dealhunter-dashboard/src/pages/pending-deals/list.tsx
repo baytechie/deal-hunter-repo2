@@ -3,7 +3,7 @@ import {
   useTable,
   ImageField,
 } from "@refinedev/antd";
-import { Table, Space, Button, Tag, Modal, Input, Checkbox, Form, message } from "antd";
+import { Table, Space, Button, Tag, Modal, Input, Checkbox, Form, Select, Slider, InputNumber, message } from "antd";
 import { CheckOutlined, CloseOutlined, SyncOutlined } from "@ant-design/icons";
 import { useState } from "react";
 
@@ -20,6 +20,13 @@ interface ApprovalFormData {
   isFeatured: boolean;
 }
 
+interface SyncConfigData {
+  keywords: string;
+  category: string;
+  itemCount: number;
+  minDiscountPercent: number;
+}
+
 export const PendingDealList = () => {
   const [syncing, setSyncing] = useState(false);
   const [rejectModalVisible, setRejectModalVisible] = useState(false);
@@ -34,6 +41,13 @@ export const PendingDealList = () => {
     isHot: false,
     isFeatured: false,
   });
+  const [syncModalVisible, setSyncModalVisible] = useState(false);
+  const [syncConfig, setSyncConfig] = useState<SyncConfigData>({
+    keywords: "deals discounts sale",
+    category: "Electronics",
+    itemCount: 50,
+    minDiscountPercent: 15,
+  });
 
   const { tableProps } = useTable({
     resource: "pending-deals",
@@ -47,9 +61,15 @@ export const PendingDealList = () => {
   const isLoading = tableProps?.loading ?? false;
   const dataSource = tableProps?.dataSource ?? [];
 
-  // Sync deals from Amazon
+  // Open sync configuration modal
+  const openSyncModal = () => {
+    setSyncModalVisible(true);
+  };
+
+  // Sync deals from Amazon with configured parameters
   const handleSync = async () => {
     setSyncing(true);
+    setSyncModalVisible(false);
     try {
       const response = await fetch(`${API_URL}/pending-deals/sync`, {
         method: "POST",
@@ -58,10 +78,10 @@ export const PendingDealList = () => {
           Authorization: `Bearer ${getToken()}`,
         },
         body: JSON.stringify({
-          keywords: "deals discounts sale",
-          category: "Electronics",
-          itemCount: 10,
-          minDiscountPercent: 15,
+          keywords: syncConfig.keywords,
+          category: syncConfig.category,
+          itemCount: syncConfig.itemCount,
+          minDiscountPercent: syncConfig.minDiscountPercent,
         }),
       });
 
@@ -71,7 +91,7 @@ export const PendingDealList = () => {
       }
 
       const result = await response.json();
-      message.success(`Synced: ${result.created} new deals, ${result.skipped} skipped`);
+      message.success(`Synced: ${result.created} new deals, ${result.skipped} skipped (fetched ${result.total})`);
       window.location.reload();
     } catch (error: any) {
       console.error("Sync error:", error);
@@ -189,7 +209,7 @@ export const PendingDealList = () => {
           <Button
             type="primary"
             icon={<SyncOutlined spin={syncing} />}
-            onClick={handleSync}
+            onClick={openSyncModal}
             loading={syncing}
           >
             Sync from Amazon
@@ -364,6 +384,72 @@ export const PendingDealList = () => {
             </Form.Item>
           </Form>
         )}
+      </Modal>
+
+      <Modal
+        title="Sync from Amazon"
+        open={syncModalVisible}
+        onOk={handleSync}
+        onCancel={() => setSyncModalVisible(false)}
+        okText="Start Sync"
+        width={500}
+      >
+        <Form layout="vertical">
+          <Form.Item label="Search Keywords">
+            <Input
+              placeholder="e.g., deals discounts sale"
+              value={syncConfig.keywords}
+              onChange={(e) => setSyncConfig({ ...syncConfig, keywords: e.target.value })}
+            />
+          </Form.Item>
+
+          <Form.Item label="Category">
+            <Select
+              value={syncConfig.category}
+              onChange={(value) => setSyncConfig({ ...syncConfig, category: value })}
+              style={{ width: "100%" }}
+            >
+              <Select.Option value="Electronics">Electronics</Select.Option>
+              <Select.Option value="Home & Kitchen">Home & Kitchen</Select.Option>
+              <Select.Option value="Fashion">Fashion</Select.Option>
+              <Select.Option value="Beauty">Beauty</Select.Option>
+              <Select.Option value="Sports">Sports</Select.Option>
+              <Select.Option value="Books">Books</Select.Option>
+              <Select.Option value="Toys">Toys</Select.Option>
+              <Select.Option value="Health">Health</Select.Option>
+              <Select.Option value="Automotive">Automotive</Select.Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item label={`Number of Deals to Fetch: ${syncConfig.itemCount}`}>
+            <Slider
+              min={10}
+              max={100}
+              step={10}
+              value={syncConfig.itemCount}
+              onChange={(value) => setSyncConfig({ ...syncConfig, itemCount: value })}
+              marks={{
+                10: "10",
+                50: "50",
+                100: "100",
+              }}
+            />
+            <div style={{ color: "#888", fontSize: "12px", marginTop: "4px" }}>
+              Amazon allows up to 100 items (10 pages x 10 items per page)
+            </div>
+          </Form.Item>
+
+          <Form.Item label="Minimum Discount %">
+            <InputNumber
+              min={0}
+              max={99}
+              value={syncConfig.minDiscountPercent}
+              onChange={(value) => setSyncConfig({ ...syncConfig, minDiscountPercent: value || 0 })}
+              style={{ width: "100%" }}
+              addonAfter="%"
+            />
+          </Form.Item>
+        </Form>
       </Modal>
     </List>
   );
