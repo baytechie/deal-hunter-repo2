@@ -163,7 +163,38 @@ class FlipFeedNotifier extends StateNotifier<FlipFeedState> {
     state = state.copyWith(flippedCards: {});
   }
 
+  /// Set deals from an external source (e.g., the Feed page)
+  /// This allows the Flip page to show the same deals as the Feed
+  void setDeals(List<Deal> deals) {
+    final enhancedDeals = deals.map((deal) => _enhanceDeal(deal)).toList();
+    state = state.copyWith(
+      deals: enhancedDeals,
+      currentIndex: 0,
+      isLoading: false,
+      error: null,
+    );
+  }
+
+  /// Set deals from external source and scroll to a specific deal by ID
+  void setDealsAndScrollTo(List<Deal> deals, String dealId) {
+    final enhancedDeals = deals.map((deal) => _enhanceDeal(deal)).toList();
+    final index = enhancedDeals.indexWhere((d) => d.id == dealId);
+
+    state = state.copyWith(
+      deals: enhancedDeals,
+      currentIndex: index >= 0 ? index : 0,
+      isLoading: false,
+      error: null,
+    );
+
+    // Jump to the page without animation for immediate feedback
+    if (index >= 0 && pageController.hasClients) {
+      pageController.jumpToPage(index);
+    }
+  }
+
   /// Load deals and scroll to a specific deal by ID
+  /// Falls back to loading from API if no deals are provided
   Future<void> loadDealsAndScrollTo(String dealId) async {
     if (state.deals.isEmpty) {
       await loadDeals();

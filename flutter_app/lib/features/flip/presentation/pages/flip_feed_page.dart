@@ -5,6 +5,7 @@ import 'package:money_saver_deals/app_shell.dart';
 import 'package:money_saver_deals/core/theme/app_theme.dart';
 import 'package:money_saver_deals/core/widgets/app_header.dart';
 import 'package:money_saver_deals/features/deals/domain/entities/deal.dart';
+import 'package:money_saver_deals/features/deals/presentation/providers/deals_provider.dart';
 import 'package:money_saver_deals/features/flip/presentation/providers/flip_feed_provider.dart';
 import 'package:money_saver_deals/features/flip/presentation/widgets/flip_card_widget.dart';
 import 'package:money_saver_deals/features/saved/presentation/providers/saved_deals_provider.dart';
@@ -33,17 +34,27 @@ class _FlipFeedPageState extends ConsumerState<FlipFeedPage> {
     });
   }
 
-  /// Initialize flip feed - load deals and navigate to selected deal if any
-  Future<void> _initializeFlipFeed() async {
+  /// Initialize flip feed - use deals from Feed page and navigate to selected deal if any
+  void _initializeFlipFeed() {
     final selectedDeal = ref.read(selectedDealForFlipProvider);
+    final dealsState = ref.read(dealsProvider);
 
-    if (selectedDeal != null) {
+    // Get deals from the Feed page if available
+    List<Deal> feedDeals = [];
+    if (dealsState is DealsSuccess) {
+      feedDeals = dealsState.deals;
+    }
+
+    if (selectedDeal != null && feedDeals.isNotEmpty) {
       // Clear the selected deal to avoid re-navigating on tab switches
       ref.read(selectedDealForFlipProvider.notifier).state = null;
-      // Load deals and scroll to the selected one
-      await ref.read(flipFeedProvider.notifier).loadDealsAndScrollTo(selectedDeal.id);
+      // Use the same deals from Feed and scroll to the selected one
+      ref.read(flipFeedProvider.notifier).setDealsAndScrollTo(feedDeals, selectedDeal.id);
+    } else if (feedDeals.isNotEmpty) {
+      // Use deals from Feed page
+      ref.read(flipFeedProvider.notifier).setDeals(feedDeals);
     } else {
-      // Normal initialization
+      // Fallback: load deals from API if Feed has no deals
       ref.read(flipFeedProvider.notifier).loadDeals();
     }
   }
@@ -56,7 +67,16 @@ class _FlipFeedPageState extends ConsumerState<FlipFeedPage> {
     ref.listen<Deal?>(selectedDealForFlipProvider, (previous, next) {
       if (next != null) {
         ref.read(selectedDealForFlipProvider.notifier).state = null;
-        ref.read(flipFeedProvider.notifier).loadDealsAndScrollTo(next.id);
+
+        // Get deals from the Feed page
+        final dealsState = ref.read(dealsProvider);
+        if (dealsState is DealsSuccess && dealsState.deals.isNotEmpty) {
+          // Use deals from Feed and scroll to the selected one
+          ref.read(flipFeedProvider.notifier).setDealsAndScrollTo(dealsState.deals, next.id);
+        } else {
+          // Fallback to loading from API
+          ref.read(flipFeedProvider.notifier).loadDealsAndScrollTo(next.id);
+        }
       }
     });
 
