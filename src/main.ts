@@ -21,6 +21,8 @@ async function bootstrap() {
       'https://www.huntdeals.app',
       'https://huntdeals.app',
       'https://admin.huntdeals.app',
+      // Render deployment URLs
+      'https://dealhunter-admin.onrender.com',
       // Local development
       'http://localhost:3001', 'http://localhost:5173', 'http://localhost:5174',
       'http://localhost:8080', 'http://localhost:8081', 'http://localhost:8085',
