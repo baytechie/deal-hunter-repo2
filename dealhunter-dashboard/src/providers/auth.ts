@@ -1,7 +1,8 @@
 import type { AuthProvider } from "@refinedev/core";
 import { TOKEN_KEY } from "./constants";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+// FIXME: Hardcoded API URL because Vite env vars aren't being picked up in Render build
+const API_URL = import.meta.env.VITE_API_URL || "https://api.huntdeals.app";
 
 export const authProvider: AuthProvider = {
   login: async ({ email, password }) => {

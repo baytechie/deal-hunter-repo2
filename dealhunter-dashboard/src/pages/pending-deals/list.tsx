@@ -7,7 +7,8 @@ import { Table, Space, Button, Tag, Modal, Input, message } from "antd";
 import { CheckOutlined, CloseOutlined, SyncOutlined } from "@ant-design/icons";
 import { useState } from "react";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+// FIXME: Hardcoded API URL because Vite env vars aren't being picked up in Render build
+const API_URL = import.meta.env.VITE_API_URL || "https://api.huntdeals.app";
 
 const getToken = () => localStorage.getItem("refine-auth");
 
