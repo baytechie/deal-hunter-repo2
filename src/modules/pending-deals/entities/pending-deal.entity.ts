@@ -52,7 +52,7 @@ export class PendingDeal {
   @Column({ type: 'varchar', length: 255, nullable: true })
   approvedBy: string | null;
 
-  @Column({ type: 'datetime', nullable: true })
+  @Column({ nullable: true })
   approvedAt: Date | null;
 
   @Column({ type: 'text', nullable: true })
