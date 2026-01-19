@@ -94,9 +94,9 @@ class DealModel extends Deal {
       id: json['id'] as String,
       title: json['title'] as String,
       description: json['description'] as String? ?? '',
-      price: (json['price'] as num).toDouble(),
-      originalPrice: (json['originalPrice'] as num).toDouble(),
-      discountPercentage: (json['discountPercentage'] as num).toDouble(),
+      price: _parseDouble(json['price']),
+      originalPrice: _parseDouble(json['originalPrice']),
+      discountPercentage: _parseDouble(json['discountPercentage']),
       imageUrl: json['imageUrl'] as String? ?? '',
       affiliateLink: json['affiliateLink'] as String,
       isHot: json['isHot'] as bool? ?? false,
@@ -117,6 +117,15 @@ class DealModel extends Deal {
       likes: json['likes'] as int? ?? 0,
       comments: json['comments'] as int? ?? 0,
     );
+  }
+
+  /// Helper to parse double from either String or num
+  /// PostgreSQL decimal columns return strings to preserve precision
+  static double _parseDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
   }
 
   /// Helper to extract bullet points from description text
