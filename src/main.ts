@@ -25,6 +25,8 @@ async function bootstrap() {
       // Render deployment URLs
       'https://dealhunter-admin.onrender.com',
       'https://dealhunter-pwa.onrender.com',
+      // FIXME: Direct Render API URL for backward compatibility
+      'https://dealhunter-api-x85h.onrender.com',
     ],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
