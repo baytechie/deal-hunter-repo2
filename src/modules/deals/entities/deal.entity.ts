@@ -38,7 +38,7 @@ export class Deal {
   @Column({ type: 'varchar', length: 1000 })
   affiliateLink: string;
 
-  @Column({ type: 'datetime', nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   expiryDate: Date;
 
   @Column({ type: 'boolean', default: false })
