@@ -120,6 +120,7 @@ export class AmazonPaapiService implements OnModuleInit {
           'ItemInfo.Features',
           'Offers.Listings.Price',
           'Offers.Listings.SavingBasis',
+          'Offers.Listings.Promotions',
           'Images.Primary.Large',
           'BrowseNodeInfo.BrowseNodes',
         ],
@@ -231,6 +232,38 @@ export class AmazonPaapiService implements OnModuleInit {
           const discountPercentage =
             originalPrice > 0 ? ((originalPrice - price) / originalPrice) * 100 : 0;
 
+          // Extract promotion/deal information
+          const promotions = listing.Promotions || [];
+          let dealBadge: string | undefined;
+          let dealAccessType: string | undefined;
+
+          // Check for promotions (coupons, discounts, etc.)
+          if (promotions.length > 0) {
+            const promo = promotions[0];
+            // Promotions may have Type, DiscountPercent, Amount, etc.
+            if (promo.Type) {
+              dealBadge = promo.Type;
+            }
+            if (promo.DiscountPercent) {
+              dealBadge = `${promo.DiscountPercent}% Off Coupon`;
+            }
+            this.logger.debug(
+              `Found promotion for ${item.ASIN}: ${JSON.stringify(promo)}`,
+              this.context,
+            );
+          }
+
+          // Check for deal details (Limited Time Deal, etc.)
+          const dealDetails = listing.DealDetails;
+          if (dealDetails) {
+            dealBadge = dealDetails.Badge || dealBadge;
+            dealAccessType = dealDetails.AccessType;
+            this.logger.debug(
+              `Found deal for ${item.ASIN}: ${JSON.stringify(dealDetails)}`,
+              this.context,
+            );
+          }
+
           return {
             asin: item.ASIN,
             title: item.ItemInfo?.Title?.DisplayValue || 'Unknown Product',
@@ -241,6 +274,11 @@ export class AmazonPaapiService implements OnModuleInit {
             imageUrl: item.Images?.Primary?.Large?.URL || null,
             productUrl: item.DetailPageURL,
             category,
+            dealBadge,
+            dealAccessType,
+            dealStartTime: dealDetails?.StartTime,
+            dealEndTime: dealDetails?.EndTime,
+            dealPercentClaimed: dealDetails?.PercentClaimed,
           } as AmazonProduct;
         } catch (error) {
           this.logger.warn(`Failed to parse item: ${error.message}`, this.context);

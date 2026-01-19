@@ -63,4 +63,14 @@ export class PendingDeal {
 
   @Column({ type: 'text', nullable: true })
   promoDescription: string | null;
+
+  // Amazon deal information
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  dealBadge: string | null; // e.g., "Limited Time Deal", "Deal of the Day"
+
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  dealAccessType: string | null; // "ALL", "PRIME_EXCLUSIVE", "PRIME_EARLY_ACCESS"
+
+  @Column({ nullable: true })
+  dealEndTime: Date | null;
 }

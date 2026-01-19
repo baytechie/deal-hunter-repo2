@@ -103,11 +103,20 @@ export const PendingDealList = () => {
   // Open approve modal
   const openApproveModal = (record: any) => {
     setSelectedDealForApproval(record);
+    // Pre-populate promo description from Amazon deal info
+    let promoDesc = "";
+    if (record.dealBadge) {
+      promoDesc = record.dealBadge;
+      if (record.dealEndTime) {
+        const endDate = new Date(record.dealEndTime);
+        promoDesc += ` - Ends ${endDate.toLocaleDateString()}`;
+      }
+    }
     setApprovalForm({
       customTitle: "",
-      couponCode: "",
-      promoDescription: "",
-      isHot: false,
+      couponCode: record.couponCode || "",
+      promoDescription: promoDesc,
+      isHot: !!record.dealBadge, // Auto-mark as hot if Amazon deal
       isFeatured: false,
     });
     setApproveModalVisible(true);
@@ -222,6 +231,12 @@ export const PendingDealList = () => {
         dataSource={dataSource}
         rowKey="id"
         loading={isLoading}
+        pagination={{
+          ...tableProps.pagination,
+          showSizeChanger: true,
+          showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} deals`,
+          pageSizeOptions: ["10", "20", "50"],
+        }}
       >
         <Table.Column
           dataIndex="imageUrl"
@@ -261,6 +276,15 @@ export const PendingDealList = () => {
           )}
         />
         <Table.Column dataIndex="category" title="Category" />
+        <Table.Column
+          dataIndex="dealBadge"
+          title="Deal Type"
+          render={(value) => value ? (
+            <Tag color="purple">{value}</Tag>
+          ) : (
+            <span style={{ color: "#999" }}>-</span>
+          )}
+        />
         <Table.Column
           dataIndex="status"
           title="Status"
@@ -339,6 +363,23 @@ export const PendingDealList = () => {
                 {selectedDealForApproval.title}
               </div>
             </Form.Item>
+
+            {/* Amazon Deal Info */}
+            {selectedDealForApproval.dealBadge && (
+              <Form.Item label="Amazon Deal Info">
+                <div style={{ padding: "8px", background: "#f0e6ff", borderRadius: "4px", border: "1px solid #d3adf7" }}>
+                  <Tag color="purple">{selectedDealForApproval.dealBadge}</Tag>
+                  {selectedDealForApproval.dealAccessType && (
+                    <Tag color="blue">{selectedDealForApproval.dealAccessType}</Tag>
+                  )}
+                  {selectedDealForApproval.dealEndTime && (
+                    <span style={{ marginLeft: 8, color: "#666" }}>
+                      Ends: {new Date(selectedDealForApproval.dealEndTime).toLocaleString()}
+                    </span>
+                  )}
+                </div>
+              </Form.Item>
+            )}
 
             <Form.Item label="Custom Title (optional)">
               <Input

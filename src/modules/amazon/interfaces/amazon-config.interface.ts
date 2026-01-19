@@ -21,6 +21,12 @@ export interface AmazonProduct {
   imageUrl?: string;
   productUrl: string;
   category: string;
+  // Deal information from OffersV2.DealDetails
+  dealBadge?: string; // e.g., "Limited Time Deal", "Deal of the Day"
+  dealAccessType?: string; // "ALL", "PRIME_EXCLUSIVE", "PRIME_EARLY_ACCESS"
+  dealStartTime?: string;
+  dealEndTime?: string;
+  dealPercentClaimed?: number;
 }
 
 /**

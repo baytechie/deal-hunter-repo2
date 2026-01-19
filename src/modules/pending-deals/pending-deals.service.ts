@@ -96,6 +96,10 @@ export class PendingDealsService {
         productUrl: product.productUrl,
         category: product.category,
         status: 'PENDING',
+        // Amazon deal information
+        dealBadge: product.dealBadge || null,
+        dealAccessType: product.dealAccessType || null,
+        dealEndTime: product.dealEndTime ? new Date(product.dealEndTime) : null,
       });
 
       created++;
