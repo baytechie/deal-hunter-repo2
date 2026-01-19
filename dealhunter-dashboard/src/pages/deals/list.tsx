@@ -53,11 +53,11 @@ export const DealList = () => {
           render={(value, record: any) => (
             <Space direction="vertical" size={0}>
               <Typography.Text strong style={{ color: "#52c41a" }}>
-                {formatCurrency(value)}
+                {formatCurrency(parseFloat(value))}
               </Typography.Text>
               <Typography.Text type="secondary">
                 <span style={{ textDecoration: "line-through" }}>
-                  {formatCurrency(record.originalPrice)}
+                  {formatCurrency(parseFloat(record.originalPrice))}
                 </span>
               </Typography.Text>
             </Space>
@@ -67,7 +67,7 @@ export const DealList = () => {
           dataIndex="discountPercentage"
           title="Discount"
           render={(value) => (
-            <Tag color="red">{value?.toFixed(0)}% OFF</Tag>
+            <Tag color="red">{parseFloat(value)?.toFixed(0)}% OFF</Tag>
           )}
         />
         <Table.Column dataIndex="category" title="Category" />

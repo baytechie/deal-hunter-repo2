@@ -196,7 +196,7 @@ export const PendingDealList = () => {
           dataIndex="discountPercentage"
           title="Discount"
           render={(value) => (
-            <Tag color="red">{value?.toFixed(0)}% OFF</Tag>
+            <Tag color="red">{parseFloat(value)?.toFixed(0)}% OFF</Tag>
           )}
         />
         <Table.Column dataIndex="category" title="Category" />
