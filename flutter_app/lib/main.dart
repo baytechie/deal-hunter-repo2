@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:money_saver_deals/app_shell.dart';
 import 'package:money_saver_deals/core/services/logging_service.dart';
+import 'package:money_saver_deals/core/theme/app_theme.dart';
 import 'package:money_saver_deals/features/deals/data/datasources/api_client.dart';
 import 'package:money_saver_deals/features/deals/data/repositories/deals_repository_impl.dart';
 import 'package:money_saver_deals/features/deals/presentation/providers/deals_provider.dart';
@@ -97,7 +98,7 @@ void main() {
 ///
 /// This is the entry point of the Flutter application.
 /// It sets up:
-/// - Theme configuration
+/// - Theme configuration with enhanced design system
 /// - Riverpod provider scope
 /// - Bottom navigation shell
 class MoneySaverDealsApp extends StatelessWidget {
@@ -106,16 +107,9 @@ class MoneySaverDealsApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Deal Hunter',
+      title: 'Hunt \$Deals',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF10B981), // Emerald Green
-          brightness: Brightness.light,
-        ),
-        useMaterial3: true,
-        scaffoldBackgroundColor: const Color(0xFFF3F4F6), // Light Grey
-      ),
+      theme: buildAppTheme(),
       home: const AppShell(),
     );
   }

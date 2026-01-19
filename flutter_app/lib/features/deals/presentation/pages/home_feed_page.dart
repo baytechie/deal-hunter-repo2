@@ -1,21 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:money_saver_deals/core/theme/app_theme.dart';
 import 'package:money_saver_deals/features/deals/presentation/providers/deals_provider.dart';
 import 'package:money_saver_deals/features/deals/presentation/widgets/deal_card.dart';
 import 'package:money_saver_deals/features/notifications/presentation/pages/notifications_page.dart';
 import 'package:money_saver_deals/app_shell.dart';
 
 final selectedCategoryFilterProvider = StateProvider<String?>((ref) => null);
-final gridViewModeProvider = StateProvider<bool>((ref) => true); // true = grid, false = list
+final gridViewModeProvider = StateProvider<bool>((ref) => true);
 
 /// Home Feed Page - Main deals feed with search, filters, grid, and infinite scroll
 ///
-/// Why: This page is the main entry point for users to browse deals.
-/// It supports:
-/// - Category filtering
-/// - Grid/List view toggle
-/// - Infinite scroll pagination for smooth browsing experience
-/// - Pull-to-refresh for manual refresh
+/// Design: Modern, premium shopping app with depth and visual hierarchy
+/// Features:
+/// - Enhanced search bar with filter icon
+/// - Animated category pills with gradients
+/// - Responsive grid layout
+/// - Infinite scroll pagination
+/// - Pull-to-refresh
 class HomeFeedPage extends ConsumerStatefulWidget {
   const HomeFeedPage({super.key});
 
@@ -25,12 +28,7 @@ class HomeFeedPage extends ConsumerStatefulWidget {
 
 class _HomeFeedPageState extends ConsumerState<HomeFeedPage> {
   bool _initialFetchDone = false;
-
-  /// Scroll controller for detecting when user reaches bottom of list
   late ScrollController _scrollController;
-
-  /// Threshold in pixels before the end to trigger load more
-  /// Why: Loading early provides smoother UX by starting load before user hits the end
   static const double _loadMoreThreshold = 200.0;
 
   @override
@@ -47,21 +45,15 @@ class _HomeFeedPageState extends ConsumerState<HomeFeedPage> {
     super.dispose();
   }
 
-  /// Handle scroll events to trigger infinite scroll
-  ///
-  /// Why: Check if user has scrolled near the bottom and trigger load more
-  /// if there are more deals available and not already loading
   void _onScroll() {
     if (!_scrollController.hasClients) return;
 
     final maxScroll = _scrollController.position.maxScrollExtent;
     final currentScroll = _scrollController.position.pixels;
 
-    // Check if we're near the bottom
     if (maxScroll - currentScroll <= _loadMoreThreshold) {
       final dealsState = ref.read(dealsProvider);
 
-      // Only trigger load more if in success state with more deals available
       if (dealsState is DealsSuccess &&
           dealsState.hasMore &&
           !dealsState.isLoadingMore) {
@@ -82,204 +74,12 @@ class _HomeFeedPageState extends ConsumerState<HomeFeedPage> {
     final dealsState = ref.watch(dealsProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F4F6),
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Column(
           children: [
             // Header Section
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  // Top Bar: Logo + Notification
-                  Row(
-                    children: [
-                      // Logo and Title - Clickable to go home
-                      GestureDetector(
-                        onTap: () {
-                          // Reset to home tab (Feed)
-                          ref.read(selectedTabProvider.notifier).state = 0;
-                          // Reset filters
-                          ref.read(selectedCategoryFilterProvider.notifier).state = null;
-                          // Reload all deals
-                          ref.read(dealsProvider.notifier).fetchAllDeals();
-                          // Scroll to top
-                          if (_scrollController.hasClients) {
-                            _scrollController.animateTo(
-                              0,
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeOut,
-                            );
-                          }
-                        },
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.local_offer,
-                              color: Color(0xFF10B981),
-                              size: 28,
-                            ),
-                            const SizedBox(width: 8),
-                            const Text(
-                              'Deal Hunter',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF10B981),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const Spacer(),
-
-                      // Notification Bell
-                      IconButton(
-                        icon: const Icon(
-                          Icons.notifications_outlined,
-                          color: Colors.grey,
-                          size: 24,
-                        ),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const NotificationsPage(),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Search Bar (Full Width)
-                  Container(
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(30),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 4,
-                          offset: Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: TextField(
-                      decoration: InputDecoration(
-                        labelText: 'Search deals',
-                        labelStyle: const TextStyle(
-                          color: Colors.grey,
-                          fontSize: 14,
-                        ),
-                        floatingLabelBehavior: FloatingLabelBehavior.never,
-                        hintText: 'Search deals...',
-                        prefixIcon: const Icon(
-                          Icons.search,
-                          color: Colors.grey,
-                          size: 20,
-                          semanticLabel: 'Search icon',
-                        ),
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(
-                          vertical: 10,
-                          horizontal: 8,
-                        ),
-                        hintStyle: const TextStyle(
-                          color: Colors.grey,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Filter Pills
-                  Consumer(
-                    builder: (context, ref, _) {
-                      final selectedFilter = ref.watch(selectedCategoryFilterProvider);
-                      final isGridView = ref.watch(gridViewModeProvider);
-
-                      return SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: [
-                            _FilterPill(
-                              'Frontpage',
-                              isSelected: selectedFilter == null,
-                              onTap: () {
-                                ref.read(selectedCategoryFilterProvider.notifier).state = null;
-                                ref.read(dealsProvider.notifier).fetchAllDeals();
-                                _scrollToTop();
-                              },
-                            ),
-                            const SizedBox(width: 8),
-                            _FilterPill(
-                              'Popular',
-                              isSelected: selectedFilter == 'Popular',
-                              onTap: () {
-                                ref.read(selectedCategoryFilterProvider.notifier).state = 'Popular';
-                                ref.read(dealsProvider.notifier).fetchAllDeals(isHot: true);
-                                _scrollToTop();
-                              },
-                            ),
-                            const SizedBox(width: 8),
-                            _FilterPill(
-                              'Tech',
-                              isSelected: selectedFilter == 'Tech',
-                              onTap: () {
-                                ref.read(selectedCategoryFilterProvider.notifier).state = 'Tech';
-                                ref.read(dealsProvider.notifier).fetchAllDeals(category: 'Tech');
-                                _scrollToTop();
-                              },
-                            ),
-                            const SizedBox(width: 8),
-                            _FilterPill(
-                              'Electronics',
-                              isSelected: selectedFilter == 'Electronics',
-                              onTap: () {
-                                ref.read(selectedCategoryFilterProvider.notifier).state = 'Electronics';
-                                ref.read(dealsProvider.notifier).fetchAllDeals(category: 'Electronics');
-                                _scrollToTop();
-                              },
-                            ),
-                            const SizedBox(width: 8),
-                            Semantics(
-                              label: isGridView
-                                  ? 'Switch to list view'
-                                  : 'Switch to grid view',
-                              button: true,
-                              child: GestureDetector(
-                                onTap: () {
-                                  ref.read(gridViewModeProvider.notifier).state = !isGridView;
-                                },
-                                child: Container(
-                                  width: 48,
-                                  height: 48,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(24),
-                                    border: Border.all(color: Colors.grey[300]!),
-                                  ),
-                                  child: Icon(
-                                    isGridView ? Icons.view_list : Icons.dashboard,
-                                    color: const Color(0xFF047857),
-                                    size: 22,
-                                    semanticLabel: isGridView ? 'List view icon' : 'Grid view icon',
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
+            _buildHeader(),
 
             // Grid/List Content with Infinite Scroll
             Expanded(
@@ -291,9 +91,264 @@ class _HomeFeedPageState extends ConsumerState<HomeFeedPage> {
     );
   }
 
-  /// Scroll to top of the list
-  ///
-  /// Why: When filters change, scroll to top to show new results
+  /// Build the header with logo, search, and filters
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Top Bar: Logo + Notification
+          _buildTopBar(),
+          const SizedBox(height: 12),
+
+          // Search Bar
+          _buildSearchBar(),
+          const SizedBox(height: 14),
+
+          // Filter Pills
+          _buildFilterPills(),
+        ],
+      ),
+    );
+  }
+
+  /// Build the top bar with logo and notification
+  Widget _buildTopBar() {
+    return Row(
+      children: [
+        // Logo and Title - Clickable to go home
+        GestureDetector(
+          onTap: () {
+            HapticFeedback.selectionClick();
+            ref.read(selectedTabProvider.notifier).state = 0;
+            ref.read(selectedCategoryFilterProvider.notifier).state = null;
+            ref.read(dealsProvider.notifier).fetchAllDeals();
+            _scrollToTop();
+          },
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppColors.primary, AppColors.primaryLight],
+                  ),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                ),
+                child: const Text(
+                  '\$',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              ShaderMask(
+                shaderCallback: (bounds) => const LinearGradient(
+                  colors: [AppColors.primary, AppColors.primaryLight],
+                ).createShader(bounds),
+                child: const Text(
+                  'Hunt \$Deals',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const Spacer(),
+
+        // Notification Bell
+        Container(
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            shape: BoxShape.circle,
+            boxShadow: AppShadows.subtleShadow,
+          ),
+          child: IconButton(
+            icon: const Icon(
+              Icons.notifications_outlined,
+              color: AppColors.textMuted,
+              size: 24,
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const NotificationsPage(),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Build the enhanced search bar
+  Widget _buildSearchBar() {
+    return Container(
+      height: 48,
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.xxl),
+        border: Border.all(color: AppColors.border, width: 1),
+        boxShadow: AppShadows.searchShadow,
+      ),
+      child: TextField(
+        decoration: InputDecoration(
+          hintText: 'Search deals, brands, categories...',
+          hintStyle: const TextStyle(
+            color: AppColors.textDisabled,
+            fontSize: 15,
+            fontWeight: FontWeight.w400,
+          ),
+          prefixIcon: const Padding(
+            padding: EdgeInsets.only(left: 16, right: 12),
+            child: Icon(
+              Icons.search_rounded,
+              color: AppColors.textMuted,
+              size: 22,
+            ),
+          ),
+          prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+          suffixIcon: Container(
+            margin: const EdgeInsets.only(right: 6),
+            child: IconButton(
+              icon: Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: AppColors.primarySurface,
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                ),
+                child: const Icon(
+                  Icons.tune_rounded,
+                  color: AppColors.primary,
+                  size: 18,
+                ),
+              ),
+              onPressed: () {
+                // TODO: Show filters bottom sheet
+                HapticFeedback.lightImpact();
+              },
+              tooltip: 'Filters',
+            ),
+          ),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(vertical: 14),
+        ),
+      ),
+    );
+  }
+
+  /// Build the filter pills row
+  Widget _buildFilterPills() {
+    return Consumer(
+      builder: (context, ref, _) {
+        final selectedFilter = ref.watch(selectedCategoryFilterProvider);
+        final isGridView = ref.watch(gridViewModeProvider);
+
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _FilterPill(
+                'Frontpage',
+                icon: Icons.home_rounded,
+                isSelected: selectedFilter == null,
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  ref.read(selectedCategoryFilterProvider.notifier).state = null;
+                  ref.read(dealsProvider.notifier).fetchAllDeals();
+                  _scrollToTop();
+                },
+              ),
+              const SizedBox(width: 10),
+              _FilterPill(
+                'Popular',
+                icon: Icons.local_fire_department_rounded,
+                isSelected: selectedFilter == 'Popular',
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  ref.read(selectedCategoryFilterProvider.notifier).state = 'Popular';
+                  ref.read(dealsProvider.notifier).fetchAllDeals(isHot: true);
+                  _scrollToTop();
+                },
+              ),
+              const SizedBox(width: 10),
+              _FilterPill(
+                'Tech',
+                icon: Icons.devices_rounded,
+                isSelected: selectedFilter == 'Tech',
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  ref.read(selectedCategoryFilterProvider.notifier).state = 'Tech';
+                  ref.read(dealsProvider.notifier).fetchAllDeals(category: 'Tech');
+                  _scrollToTop();
+                },
+              ),
+              const SizedBox(width: 10),
+              _FilterPill(
+                'Electronics',
+                icon: Icons.electrical_services_rounded,
+                isSelected: selectedFilter == 'Electronics',
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  ref.read(selectedCategoryFilterProvider.notifier).state = 'Electronics';
+                  ref.read(dealsProvider.notifier).fetchAllDeals(category: 'Electronics');
+                  _scrollToTop();
+                },
+              ),
+              const SizedBox(width: 10),
+              // Grid/List Toggle
+              Semantics(
+                label: isGridView ? 'Switch to list view' : 'Switch to grid view',
+                button: true,
+                child: GestureDetector(
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    ref.read(gridViewModeProvider.notifier).state = !isGridView;
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    width: 48,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(AppRadius.lg),
+                      border: Border.all(color: AppColors.border),
+                      boxShadow: AppShadows.subtleShadow,
+                    ),
+                    child: Icon(
+                      isGridView ? Icons.view_list_rounded : Icons.grid_view_rounded,
+                      color: AppColors.primary,
+                      size: 22,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   void _scrollToTop() {
     if (_scrollController.hasClients) {
       _scrollController.animateTo(
@@ -304,32 +359,82 @@ class _HomeFeedPageState extends ConsumerState<HomeFeedPage> {
     }
   }
 
-  /// Build the main content area based on current state
   Widget _buildContent(DealsState dealsState) {
     if (dealsState is DealsSuccess) {
       return _buildDealsGrid(dealsState);
     } else if (dealsState is DealsLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
-    } else if (dealsState is DealsError) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              'Error: ${dealsState.message}',
-              style: const TextStyle(color: Colors.red),
-              textAlign: TextAlign.center,
+            const SizedBox(
+              width: 48,
+              height: 48,
+              child: CircularProgressIndicator(
+                strokeWidth: 3,
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+              ),
             ),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                ref.read(dealsProvider.notifier).fetchAllDeals();
-              },
-              child: const Text('Retry'),
+            Text(
+              'Finding best deals...',
+              style: TextStyle(
+                color: AppColors.textMuted,
+                fontSize: 14,
+              ),
             ),
           ],
+        ),
+      );
+    } else if (dealsState is DealsError) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.errorSurface,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.error_outline_rounded,
+                  color: AppColors.error,
+                  size: 48,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Oops! Something went wrong',
+                style: AppTypography.headline.copyWith(fontSize: 18),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                dealsState.message,
+                style: const TextStyle(color: AppColors.textMuted),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton.icon(
+                onPressed: () {
+                  ref.read(dealsProvider.notifier).fetchAllDeals();
+                },
+                icon: const Icon(Icons.refresh_rounded),
+                label: const Text('Try Again'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppRadius.lg),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       );
     } else {
@@ -337,16 +442,24 @@ class _HomeFeedPageState extends ConsumerState<HomeFeedPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.shopping_bag,
-              size: 64,
-              color: Colors.grey[400],
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceVariant,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.shopping_bag_outlined,
+                size: 56,
+                color: AppColors.textDisabled,
+              ),
             ),
             const SizedBox(height: 16),
             Text(
               'No deals loaded',
               style: TextStyle(
-                color: Colors.grey[600],
+                color: AppColors.textMuted,
+                fontSize: 16,
               ),
             ),
           ],
@@ -355,25 +468,19 @@ class _HomeFeedPageState extends ConsumerState<HomeFeedPage> {
     }
   }
 
-  /// Build the deals grid/list with infinite scroll support
-  ///
-  /// Why: Combines RefreshIndicator for pull-to-refresh with
-  /// scroll detection for infinite scroll pagination
   Widget _buildDealsGrid(DealsSuccess dealsState) {
     final isGridView = ref.watch(gridViewModeProvider);
     final deals = dealsState.deals;
 
-    // Calculate item count: deals + optional loading indicator + optional error message
     int itemCount = deals.length;
     if (dealsState.isLoadingMore || dealsState.loadMoreError != null) {
-      itemCount += 1; // Add footer item
+      itemCount += 1;
     } else if (dealsState.hasMore) {
-      itemCount += 1; // Add invisible trigger item
+      itemCount += 1;
     }
 
     return RefreshIndicator(
       onRefresh: () async {
-        // Get current filter state to maintain filter during refresh
         final selectedFilter = ref.read(selectedCategoryFilterProvider);
         if (selectedFilter == 'Popular') {
           await ref.read(dealsProvider.notifier).fetchAllDeals(isHot: true);
@@ -385,26 +492,26 @@ class _HomeFeedPageState extends ConsumerState<HomeFeedPage> {
           await ref.read(dealsProvider.notifier).fetchAllDeals();
         }
       },
+      color: AppColors.primary,
       child: isGridView
           ? _buildGridView(deals, dealsState, itemCount)
           : _buildListView(deals, dealsState, itemCount),
     );
   }
 
-  /// Build grid view with infinite scroll footer
   Widget _buildGridView(List deals, DealsSuccess dealsState, int itemCount) {
     return CustomScrollView(
       controller: _scrollController,
       slivers: [
-        // Deals Grid
+        // Deals Grid with improved spacing
         SliverPadding(
-          padding: const EdgeInsets.all(6),
+          padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
           sliver: SliverGrid(
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              childAspectRatio: 0.75,
-              mainAxisSpacing: 6,
-              crossAxisSpacing: 6,
+              childAspectRatio: 0.68, // Taller cards for more content
+              mainAxisSpacing: 14,    // Increased from 6
+              crossAxisSpacing: 12,   // Increased from 6
             ),
             delegate: SliverChildBuilderDelegate(
               (context, index) {
@@ -425,52 +532,47 @@ class _HomeFeedPageState extends ConsumerState<HomeFeedPage> {
     );
   }
 
-  /// Build list view with infinite scroll footer
   Widget _buildListView(List deals, DealsSuccess dealsState, int itemCount) {
     return ListView.builder(
       controller: _scrollController,
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
       itemCount: itemCount,
       itemBuilder: (context, index) {
         if (index < deals.length) {
           return Padding(
-            padding: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.only(bottom: 14),
             child: SizedBox(
-              height: 140,
+              height: 160,
               child: DealCard(deal: deals[index]),
             ),
           );
         }
-        // Footer item
         return _buildFooter(dealsState);
       },
     );
   }
 
-  /// Build the footer widget for loading indicator, error message, or end message
-  ///
-  /// Why: Provides visual feedback to users about loading state and
-  /// allows retry on error without full page refresh
   Widget _buildFooter(DealsSuccess dealsState) {
     if (dealsState.isLoadingMore) {
-      return const Padding(
-        padding: EdgeInsets.all(16.0),
+      return Padding(
+        padding: const EdgeInsets.all(20.0),
         child: Center(
           child: Column(
             children: [
-              SizedBox(
-                width: 24,
-                height: 24,
+              const SizedBox(
+                width: 28,
+                height: 28,
                 child: CircularProgressIndicator(
-                  strokeWidth: 2.0,
+                  strokeWidth: 2.5,
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
                 ),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 10),
               Text(
                 'Loading more deals...',
                 style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 12,
+                  color: AppColors.textMuted,
+                  fontSize: 13,
                 ),
               ),
             ],
@@ -481,31 +583,42 @@ class _HomeFeedPageState extends ConsumerState<HomeFeedPage> {
 
     if (dealsState.loadMoreError != null) {
       return Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0),
         child: Center(
           child: Column(
             children: [
-              const Icon(
-                Icons.error_outline,
-                color: Colors.red,
-                size: 24,
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.errorSurface,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.error_outline_rounded,
+                  color: AppColors.error,
+                  size: 24,
+                ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               Text(
                 dealsState.loadMoreError!,
                 style: const TextStyle(
-                  color: Colors.red,
-                  fontSize: 12,
+                  color: AppColors.error,
+                  fontSize: 13,
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 8),
-              TextButton(
+              const SizedBox(height: 12),
+              TextButton.icon(
                 onPressed: () {
                   ref.read(dealsProvider.notifier).clearLoadMoreError();
                   ref.read(dealsProvider.notifier).loadMoreDeals();
                 },
-                child: const Text('Tap to retry'),
+                icon: const Icon(Icons.refresh_rounded, size: 18),
+                label: const Text('Tap to retry'),
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.primary,
+                ),
               ),
             ],
           ),
@@ -514,33 +627,52 @@ class _HomeFeedPageState extends ConsumerState<HomeFeedPage> {
     }
 
     if (!dealsState.hasMore && dealsState.deals.isNotEmpty) {
-      return const Padding(
-        padding: EdgeInsets.all(16.0),
+      return Padding(
+        padding: const EdgeInsets.all(24.0),
         child: Center(
-          child: Text(
-            'You\'ve seen all deals!',
-            style: TextStyle(
-              color: Colors.grey,
-              fontSize: 12,
-              fontStyle: FontStyle.italic,
-            ),
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.primarySurface,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.check_circle_outline_rounded,
+                  color: AppColors.primary,
+                  size: 28,
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                "You've seen all deals!",
+                style: TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ),
         ),
       );
     }
 
-    // Empty placeholder for hasMore state (trigger loading via scroll)
     return const SizedBox.shrink();
   }
 }
 
+/// Enhanced Filter Pill with animation and optional icon
 class _FilterPill extends StatelessWidget {
   final String label;
+  final IconData? icon;
   final VoidCallback onTap;
   final bool isSelected;
 
   const _FilterPill(
     this.label, {
+    this.icon,
     required this.onTap,
     this.isSelected = false,
   });
@@ -549,22 +681,46 @@ class _FilterPill extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF10B981) : Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          gradient: isSelected
+              ? const LinearGradient(
+                  colors: [AppColors.primary, AppColors.primaryLight],
+                )
+              : null,
+          color: isSelected ? null : AppColors.surface,
+          borderRadius: BorderRadius.circular(AppRadius.xxl),
           border: Border.all(
-            color: isSelected ? const Color(0xFF10B981) : Colors.grey[300]!,
+            color: isSelected ? Colors.transparent : AppColors.border,
+            width: 1,
           ),
+          boxShadow: isSelected
+              ? AppShadows.elevatedShadow(AppColors.primary)
+              : AppShadows.subtleShadow,
         ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            color: isSelected ? Colors.white : const Color(0xFF6B7280),
-            fontWeight: FontWeight.w500,
-          ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(
+                icon,
+                size: 16,
+                color: isSelected ? Colors.white : AppColors.textMuted,
+              ),
+              const SizedBox(width: 6),
+            ],
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                color: isSelected ? Colors.white : AppColors.textSecondary,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+              ),
+            ),
+          ],
         ),
       ),
     );
