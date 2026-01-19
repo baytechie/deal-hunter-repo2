@@ -4,9 +4,21 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { getCorrelationId } from '../middleware/correlation-id.middleware';
 
+export interface LogEntry {
+  timestamp: string;
+  level: string;
+  message: string;
+  context?: string;
+  correlationId?: string;
+  stack?: string;
+  data?: unknown;
+}
+
 @Injectable()
 export class LoggerService implements NestLoggerService {
   private readonly logger: winston.Logger;
+  private readonly logs: LogEntry[] = [];
+  private readonly maxLogs = 1000;
 
   constructor() {
     const isProduction = process.env.NODE_ENV === 'production';
@@ -80,11 +92,78 @@ export class LoggerService implements NestLoggerService {
   }
 
   /**
+   * Store a log entry in memory for later retrieval
+   */
+  private storeLog(level: string, message: string, context?: string, stack?: string): void {
+    const entry: LogEntry = {
+      timestamp: new Date().toISOString(),
+      level,
+      message,
+      context,
+      correlationId: this.getCorrelationId(),
+      stack,
+    };
+
+    this.logs.push(entry);
+
+    // Trim logs if exceeding max
+    if (this.logs.length > this.maxLogs) {
+      this.logs.splice(0, this.logs.length - this.maxLogs);
+    }
+  }
+
+  /**
+   * Get all stored logs with optional filtering
+   */
+  getLogs(options?: {
+    level?: string;
+    context?: string;
+    search?: string;
+    limit?: number;
+  }): LogEntry[] {
+    let result = [...this.logs];
+
+    if (options?.level) {
+      result = result.filter((log) => log.level === options.level);
+    }
+
+    if (options?.context) {
+      result = result.filter((log) => log.context?.includes(options.context));
+    }
+
+    if (options?.search) {
+      const searchLower = options.search.toLowerCase();
+      result = result.filter(
+        (log) =>
+          log.message.toLowerCase().includes(searchLower) ||
+          log.context?.toLowerCase().includes(searchLower),
+      );
+    }
+
+    // Return most recent logs first
+    result = result.reverse();
+
+    if (options?.limit) {
+      result = result.slice(0, options.limit);
+    }
+
+    return result;
+  }
+
+  /**
+   * Clear all stored logs
+   */
+  clearLogs(): void {
+    this.logs.length = 0;
+  }
+
+  /**
    * Log a message at 'info' level
    * @param message - The message to log
    * @param context - Optional context/module name
    */
   log(message: string, context?: string): void {
+    this.storeLog('info', message, context);
     this.logger.info(message, this.buildMeta(context));
   }
 
@@ -95,6 +174,7 @@ export class LoggerService implements NestLoggerService {
    * @param context - Optional context/module name
    */
   error(message: string, trace?: string, context?: string): void {
+    this.storeLog('error', message, context, trace);
     const meta = this.buildMeta(context);
     this.logger.error(message, {
       ...meta,
@@ -108,6 +188,7 @@ export class LoggerService implements NestLoggerService {
    * @param context - Optional context/module name
    */
   warn(message: string, context?: string): void {
+    this.storeLog('warn', message, context);
     this.logger.warn(message, this.buildMeta(context));
   }
 
@@ -117,6 +198,7 @@ export class LoggerService implements NestLoggerService {
    * @param context - Optional context/module name
    */
   debug(message: string, context?: string): void {
+    this.storeLog('debug', message, context);
     this.logger.debug(message, this.buildMeta(context));
   }
 
@@ -126,6 +208,7 @@ export class LoggerService implements NestLoggerService {
    * @param context - Optional context/module name
    */
   verbose(message: string, context?: string): void {
+    this.storeLog('verbose', message, context);
     this.logger.verbose(message, this.buildMeta(context));
   }
 

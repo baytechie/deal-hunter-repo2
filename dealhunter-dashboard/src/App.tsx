@@ -18,6 +18,7 @@ import { HashRouter, Outlet, Route, Routes } from "react-router-dom";
 import { ColorModeContextProvider } from "./contexts/color-mode";
 import { DealList } from "./pages/deals/list";
 import { PendingDealList } from "./pages/pending-deals/list";
+import { TroubleshootingPage } from "./pages/troubleshooting";
 import { Login } from "./pages/login";
 import { authProvider } from "./providers/auth";
 import { apiDataProvider } from "./providers/apiDataProvider";
@@ -43,6 +44,11 @@ function App() {
                     name: "pending-deals",
                     list: "/pending-deals",
                     meta: { label: "Pending Deals" }
+                  },
+                  {
+                    name: "troubleshooting",
+                    list: "/troubleshooting",
+                    meta: { label: "Troubleshooting" }
                   },
                 ]}
                 options={{
@@ -71,6 +77,9 @@ function App() {
                     </Route>
                     <Route path="pending-deals">
                       <Route index element={<PendingDealList />} />
+                    </Route>
+                    <Route path="troubleshooting">
+                      <Route index element={<TroubleshootingPage />} />
                     </Route>
                   </Route>
 
