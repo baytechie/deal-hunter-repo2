@@ -19,6 +19,7 @@ import { ColorModeContextProvider } from "./contexts/color-mode";
 import { DealList } from "./pages/deals/list";
 import { PendingDealList } from "./pages/pending-deals/list";
 import { TroubleshootingPage } from "./pages/troubleshooting";
+import { CustomTitle } from "./components/CustomTitle";
 import { Login } from "./pages/login";
 import { authProvider } from "./providers/auth";
 import { apiDataProvider } from "./providers/apiDataProvider";
@@ -65,7 +66,7 @@ function App() {
                   <Route
                     element={
                       <Authenticated key="authenticated-routes" fallback={<Login />}>
-                        <ThemedLayout>
+                        <ThemedLayout Title={CustomTitle}>
                           <Outlet />
                         </ThemedLayout>
                       </Authenticated>
@@ -87,7 +88,7 @@ function App() {
                 </Routes>
                 <RefineKbar />
                 <UnsavedChangesNotifier />
-                <DocumentTitleHandler handler={() => "Deal Hunter - Admin"} />
+                <DocumentTitleHandler handler={() => "Hunt Deals Admin Dashboard"} />
               </Refine>
           </AntdApp>
         </ColorModeContextProvider>
