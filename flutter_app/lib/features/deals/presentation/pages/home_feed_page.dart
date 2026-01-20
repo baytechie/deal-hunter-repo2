@@ -425,55 +425,65 @@ class _HomeFeedPageState extends ConsumerState<HomeFeedPage> {
   }
 
   Widget _buildGridView(List deals, DealsSuccess dealsState, int itemCount) {
-    return CustomScrollView(
-      controller: _scrollController,
-      slivers: [
-        // Deals Grid with improved spacing
-        SliverPadding(
-          padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-          sliver: SliverGrid(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 0.68, // Taller cards for more content
-              mainAxisSpacing: 14,    // Increased from 6
-              crossAxisSpacing: 12,   // Increased from 6
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 600),
+        child: CustomScrollView(
+          controller: _scrollController,
+          slivers: [
+            // Deals Grid with improved spacing
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+              sliver: SliverGrid(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 0.68, // Taller cards for more content
+                  mainAxisSpacing: 14,    // Increased from 6
+                  crossAxisSpacing: 12,   // Increased from 6
+                ),
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    if (index < deals.length) {
+                      return DealCard(deal: deals[index]);
+                    }
+                    return null;
+                  },
+                  childCount: deals.length,
+                ),
+              ),
             ),
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                if (index < deals.length) {
-                  return DealCard(deal: deals[index]);
-                }
-                return null;
-              },
-              childCount: deals.length,
+            // Footer for loading indicator or error
+            SliverToBoxAdapter(
+              child: _buildFooter(dealsState),
             ),
-          ),
+          ],
         ),
-        // Footer for loading indicator or error
-        SliverToBoxAdapter(
-          child: _buildFooter(dealsState),
-        ),
-      ],
+      ),
     );
   }
 
   Widget _buildListView(List deals, DealsSuccess dealsState, int itemCount) {
-    return ListView.builder(
-      controller: _scrollController,
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-      itemCount: itemCount,
-      itemBuilder: (context, index) {
-        if (index < deals.length) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 14),
-            child: SizedBox(
-              height: 160,
-              child: DealCard(deal: deals[index]),
-            ),
-          );
-        }
-        return _buildFooter(dealsState);
-      },
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 600),
+        child: ListView.builder(
+          controller: _scrollController,
+          padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+          itemCount: itemCount,
+          itemBuilder: (context, index) {
+            if (index < deals.length) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 14),
+                child: SizedBox(
+                  height: 160,
+                  child: DealCard(deal: deals[index]),
+                ),
+              );
+            }
+            return _buildFooter(dealsState);
+          },
+        ),
+      ),
     );
   }
 
