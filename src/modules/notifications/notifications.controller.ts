@@ -1,5 +1,4 @@
-import { Controller, Get, Delete, Post, Query } from '@nestjs/common';
-import { randomUUID } from 'crypto';
+import { Controller, Get, Delete, Query } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { GetNotificationsQueryDto } from './dto/get-notifications-query.dto';
 import { LoggerService } from '../../shared/services/logger.service';
@@ -50,35 +49,5 @@ export class NotificationsController {
     this.logger.debug('DELETE /notifications/cleanup', this.context);
     const deletedCount = await this.notificationsService.cleanupOldNotifications();
     return { deletedCount, message: `Deleted ${deletedCount} old notifications` };
-  }
-
-  /**
-   * Test endpoint to verify notification creation works
-   * This creates a test notification with string values to verify toFixed fix
-   * TODO: Remove this endpoint after verification
-   */
-  @Post('test')
-  async createTestNotification() {
-    this.logger.debug('POST /notifications/test - Creating test notification', this.context);
-
-    // Simulate values as they might come from the database (as strings)
-    const testDealId = randomUUID();
-    const testTitle = 'Test Deal - Verification';
-    const testPrice = '29.99' as unknown as number; // Simulate string from DB
-    const testDiscount = '45' as unknown as number; // Simulate string from DB
-
-    const notification = await this.notificationsService.createNewDealNotification(
-      testDealId,
-      testTitle,
-      testPrice,
-      testDiscount,
-      'https://via.placeholder.com/150',
-    );
-
-    return {
-      success: true,
-      message: 'Test notification created successfully',
-      notification,
-    };
   }
 }
