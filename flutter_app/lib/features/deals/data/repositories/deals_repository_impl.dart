@@ -235,6 +235,38 @@ class DealsRepositoryImpl extends DealsRepository {
     return 'An error occurred while loading deals. Please try again.';
   }
 
+  @override
+  Future<Result<List<Deal>>> searchDeals({
+    required String query,
+    int page = 1,
+    int limit = 20,
+  }) async {
+    try {
+      logger.debug(
+        'searchDeals: query="$query", page=$page, limit=$limit',
+        context: _logContext,
+      );
+
+      final models = await apiClient.searchDeals(
+        query: query,
+        page: page,
+        limit: limit,
+      );
+      final deals = models.map((model) => model.toDomain()).toList();
+      logger.debug('searchDeals: found ${deals.length} results', context: _logContext);
+      return Success(deals);
+    } catch (e, stackTrace) {
+      final message = _mapExceptionToMessage(e);
+      logger.warning(
+        'searchDeals failed: $message',
+        context: _logContext,
+        error: e,
+        stackTrace: stackTrace,
+      );
+      return Failure(message);
+    }
+  }
+
   /// Map HTTP status codes to user-friendly messages
   ///
   /// Why: Provides specific, actionable error messages based on

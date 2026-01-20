@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:money_saver_deals/core/theme/app_theme.dart';
+import 'package:money_saver_deals/core/widgets/share_button.dart';
 import 'package:money_saver_deals/features/deals/domain/entities/deal.dart';
 import 'package:money_saver_deals/features/saved/presentation/providers/saved_deals_provider.dart';
 import 'package:money_saver_deals/app_shell.dart';
@@ -144,6 +145,11 @@ class DealCard extends ConsumerWidget {
 
                       // View Deal Button (Primary CTA)
                       _buildViewDealButton(context),
+
+                      const SizedBox(height: 8),
+
+                      // Action buttons row (Save + Share)
+                      _buildActionButtonsRow(ref),
                     ],
                   ),
                 ),
@@ -152,6 +158,65 @@ class DealCard extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+
+  /// Build action buttons row with Save and Share buttons
+  Widget _buildActionButtonsRow(WidgetRef ref) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        // Save button (heart)
+        _buildCompactSaveButton(ref),
+        const SizedBox(width: 8),
+        // Share button
+        ShareButton(deal: deal, size: ShareButtonSize.small),
+      ],
+    );
+  }
+
+  /// Build compact save button for action row
+  Widget _buildCompactSaveButton(WidgetRef ref) {
+    return Consumer(
+      builder: (context, ref, _) {
+        final savedDeals = ref.watch(savedDealsProvider);
+        final isSaved = savedDeals.any((d) => d.id == deal.id);
+
+        return Semantics(
+          label: isSaved
+              ? 'Remove ${deal.title} from saved deals'
+              : 'Save ${deal.title} to saved deals',
+          button: true,
+          child: GestureDetector(
+            onTap: () {
+              HapticFeedback.lightImpact();
+              ref.read(savedDealsProvider.notifier).toggleSave(deal);
+            },
+            child: Container(
+              width: 44,
+              height: 44,
+              alignment: Alignment.center,
+              child: Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: isSaved ? AppColors.errorSurface : AppColors.surface,
+                  shape: BoxShape.circle,
+                  boxShadow: AppShadows.subtleShadow,
+                  border: isSaved
+                      ? Border.all(color: AppColors.error, width: 2)
+                      : null,
+                ),
+                child: Icon(
+                  isSaved ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                  size: 18,
+                  color: isSaved ? AppColors.error : AppColors.textMuted,
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 

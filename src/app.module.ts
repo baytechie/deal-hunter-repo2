@@ -11,11 +11,13 @@ import { PendingDealsModule } from './modules/pending-deals/pending-deals.module
 import { AdminModule } from './modules/admin/admin.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { SocialMediaModule } from './modules/social-media/social-media.module';
+import { UsersModule } from './modules/users/users.module';
 import { Deal } from './modules/deals/entities/deal.entity';
 import { AdminUser } from './modules/auth/entities/admin-user.entity';
 import { PendingDeal } from './modules/pending-deals/entities/pending-deal.entity';
 import { Notification } from './modules/notifications/entities/notification.entity';
 import { SocialPost } from './modules/social-media/entities/social-post.entity';
+import { User, UserSession, SavedDeal, UserFcmToken } from './modules/users/entities';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -32,7 +34,7 @@ const getDatabaseConfig = () => {
     return {
       type: 'postgres' as const,
       url: process.env.DATABASE_URL,
-      entities: [Deal, AdminUser, PendingDeal, Notification, SocialPost],
+      entities: [Deal, AdminUser, PendingDeal, Notification, SocialPost, User, UserSession, SavedDeal, UserFcmToken],
       synchronize: true,
       ssl: {
         rejectUnauthorized: false,
@@ -44,7 +46,7 @@ const getDatabaseConfig = () => {
   return {
     type: 'sqlite' as const,
     database: process.env.DATABASE_PATH || path.join(dataDir, 'deals.db'),
-    entities: [Deal, AdminUser, PendingDeal, Notification, SocialPost],
+    entities: [Deal, AdminUser, PendingDeal, Notification, SocialPost, User, UserSession, SavedDeal, UserFcmToken],
     synchronize: true,
     logging: process.env.NODE_ENV === 'development',
   };
@@ -67,6 +69,7 @@ const getDatabaseConfig = () => {
     PendingDealsModule,
     AdminModule,
     SocialMediaModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -134,6 +134,39 @@ class ApiClient {
     }
   }
 
+  /// Search deals by query string
+  Future<List<DealModel>> searchDeals({
+    required String query,
+    int page = 1,
+    int limit = 20,
+  }) async {
+    try {
+      final queryParams = {
+        'q': query,
+        'page': page,
+        'limit': limit,
+      };
+
+      final response = await dio.get('/deals/search', queryParameters: queryParams);
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        final dealsList = data is List
+            ? data
+            : data['data'] is List
+                ? data['data']
+                : <dynamic>[];
+
+        return (dealsList as List<dynamic>)
+            .map((deal) => DealModel.fromJson(deal as Map<String, dynamic>))
+            .toList();
+      }
+      return [];
+    } on DioException {
+      rethrow;
+    }
+  }
+
   // ============ NOTIFICATION ENDPOINTS ============
 
   /// Fetch all recent notifications (last 7 days)

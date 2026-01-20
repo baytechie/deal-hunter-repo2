@@ -61,7 +61,21 @@ abstract class DealsRepository {
   Future<Result<Deal>> getDealById(String id);
 
   /// Fetch all available categories
-  /// 
+  ///
   /// Returns: Result containing list of category strings or error message
   Future<Result<List<String>>> getCategories();
+
+  /// Search for deals by query
+  ///
+  /// Parameters:
+  /// - [query]: Search query string
+  /// - [page]: Page number for pagination
+  /// - [limit]: Number of results per page
+  ///
+  /// Returns: Result containing list of matching deals or error message
+  Future<Result<List<Deal>>> searchDeals({
+    required String query,
+    int page = 1,
+    int limit = 20,
+  });
 }

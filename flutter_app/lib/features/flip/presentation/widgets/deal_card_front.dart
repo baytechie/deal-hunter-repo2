@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:money_saver_deals/core/widgets/share_button.dart';
 import 'package:money_saver_deals/features/deals/domain/entities/deal.dart';
 
 /// DealCardFront - The initial view of a deal card
@@ -122,46 +123,54 @@ class DealCardFront extends StatelessWidget {
             ],
           ),
 
-          // Right side: Heart button - 48x48 touch target for accessibility
-          Semantics(
-            label: isSaved
-                ? 'Remove ${deal.title} from saved deals'
-                : 'Save ${deal.title} to saved deals',
-            button: true,
-            child: GestureDetector(
-              onTap: onSaveToggle,
-              child: Container(
-                width: 48,
-                height: 48,
-                alignment: Alignment.center,
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
+          // Right side: Share button + Heart button
+          Row(
+            children: [
+              // Share button
+              ShareButton(deal: deal, size: ShareButtonSize.large),
+              const SizedBox(width: 4),
+              // Heart button - 48x48 touch target for accessibility
+              Semantics(
+                label: isSaved
+                    ? 'Remove ${deal.title} from saved deals'
+                    : 'Save ${deal.title} to saved deals',
+                button: true,
+                child: GestureDetector(
+                  onTap: onSaveToggle,
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    alignment: Alignment.center,
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 200),
-                    transitionBuilder: (child, animation) {
-                      return ScaleTransition(scale: animation, child: child);
-                    },
-                    child: Icon(
-                      isSaved ? Icons.favorite : Icons.favorite_border,
-                      key: ValueKey(isSaved),
-                      color: isSaved ? Colors.red : Colors.grey[600],
-                      size: 24,
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 200),
+                        transitionBuilder: (child, animation) {
+                          return ScaleTransition(scale: animation, child: child);
+                        },
+                        child: Icon(
+                          isSaved ? Icons.favorite : Icons.favorite_border,
+                          key: ValueKey(isSaved),
+                          color: isSaved ? Colors.red : Colors.grey[600],
+                          size: 24,
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
+            ],
           ),
         ],
       ),

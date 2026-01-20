@@ -21,6 +21,17 @@ dependencies:
   # URL Launching
   url_launcher: ^6.1.12
 
+  # Sharing
+  share_plus: ^7.2.1
+
+  # Local Storage
+  shared_preferences: ^2.2.2
+  flutter_secure_storage: ^9.0.0
+
+  # Authentication (optional - for OAuth)
+  # google_sign_in: ^6.1.6
+  # sign_in_with_apple: ^5.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
