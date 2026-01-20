@@ -51,10 +51,10 @@ export class SocialPost {
   })
   status: PostStatus;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ nullable: true })
   scheduledAt: Date; // For scheduled posts
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ nullable: true })
   postedAt: Date; // When actually posted
 
   @Column({ type: 'text', nullable: true })
