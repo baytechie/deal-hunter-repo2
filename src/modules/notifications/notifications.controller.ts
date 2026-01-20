@@ -1,4 +1,5 @@
 import { Controller, Get, Delete, Post, Query } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 import { NotificationsService } from './notifications.service';
 import { GetNotificationsQueryDto } from './dto/get-notifications-query.dto';
 import { LoggerService } from '../../shared/services/logger.service';
@@ -61,7 +62,7 @@ export class NotificationsController {
     this.logger.debug('POST /notifications/test - Creating test notification', this.context);
 
     // Simulate values as they might come from the database (as strings)
-    const testDealId = 'test-deal-' + Date.now();
+    const testDealId = randomUUID();
     const testTitle = 'Test Deal - Verification';
     const testPrice = '29.99' as unknown as number; // Simulate string from DB
     const testDiscount = '45' as unknown as number; // Simulate string from DB
