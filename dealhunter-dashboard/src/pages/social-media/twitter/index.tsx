@@ -34,6 +34,7 @@ import {
   SaveOutlined,
   EyeOutlined,
   CheckOutlined,
+  CopyOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -538,6 +539,17 @@ export const TwitterTab: React.FC = () => {
               >
                 Save for Review
               </Button>
+              <Button
+                icon={<CopyOutlined />}
+                onClick={() => {
+                  navigator.clipboard.writeText(tweetContent);
+                  message.success("Tweet copied to clipboard! Open Twitter to post manually.");
+                }}
+                disabled={!tweetContent}
+                size="large"
+              >
+                Copy Tweet
+              </Button>
               {tweetContent && (
                 <Button onClick={() => setTweetContent("")}>Clear</Button>
               )}
@@ -665,7 +677,7 @@ export const TwitterTab: React.FC = () => {
             )}
 
             {/* Action Buttons */}
-            <div style={{ display: "flex", gap: 12, justifyContent: "flex-end" }}>
+            <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", flexWrap: "wrap" }}>
               <Button
                 onClick={() => {
                   setPreviewVisible(false);
@@ -688,6 +700,22 @@ export const TwitterTab: React.FC = () => {
                   Delete Draft
                 </Button>
               </Popconfirm>
+              <Button
+                icon={<CopyOutlined />}
+                onClick={() => {
+                  navigator.clipboard.writeText(editingContent);
+                  message.success("Tweet copied to clipboard!");
+                }}
+              >
+                Copy Tweet
+              </Button>
+              <Button
+                icon={<TwitterOutlined />}
+                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(editingContent)}`}
+                target="_blank"
+              >
+                Open Twitter
+              </Button>
               <Button
                 type="primary"
                 icon={<CheckOutlined />}
