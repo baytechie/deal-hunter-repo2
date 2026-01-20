@@ -1,13 +1,17 @@
 import {
   Controller,
   Get,
+  Post,
+  Patch,
+  Delete,
+  Body,
   Param,
   Query,
   ParseUUIDPipe,
   HttpStatus,
 } from '@nestjs/common';
 import { DealsService } from './deals.service';
-import { GetDealsQueryDto, LimitQueryDto } from './dto';
+import { GetDealsQueryDto, LimitQueryDto, CreateDealDto } from './dto';
 import { LoggerService } from '../../shared/services/logger.service';
 import { Deal } from './entities/deal.entity';
 import { PaginatedResult } from './repositories/deals.repository.interface';
@@ -359,6 +363,123 @@ export class DealsController {
     } catch (error) {
       this.logger.error(
         `[${requestId}] ERROR: GET /deals/${id} failed - ${error.message}`,
+        error.stack,
+        this.context,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * POST /deals
+   * Create a new deal
+   */
+  @Post()
+  async create(@Body() createDealDto: CreateDealDto): Promise<Deal> {
+    const requestId = this.generateRequestId();
+
+    // Entry logging
+    this.logger.log(
+      `[${requestId}] ENTRY: POST /deals - Creating deal: ${createDealDto.title}`,
+      this.context,
+    );
+    this.logger.debug(
+      `[${requestId}] Deal data: ${JSON.stringify(createDealDto)}`,
+      this.context,
+    );
+
+    try {
+      const deal = await this.dealsService.create(createDealDto);
+
+      // Exit logging
+      this.logger.log(
+        `[${requestId}] EXIT: POST /deals - Deal created: ${deal.id}`,
+        this.context,
+      );
+
+      return deal;
+    } catch (error) {
+      this.logger.error(
+        `[${requestId}] ERROR: POST /deals failed - ${error.message}`,
+        error.stack,
+        this.context,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * PATCH /deals/:id
+   * Update an existing deal
+   */
+  @Patch(':id')
+  async update(
+    @Param('id', new ParseUUIDPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST }))
+    id: string,
+    @Body() updateDealDto: Partial<CreateDealDto>,
+  ): Promise<Deal> {
+    const requestId = this.generateRequestId();
+
+    // Entry logging
+    this.logger.log(
+      `[${requestId}] ENTRY: PATCH /deals/${id}`,
+      this.context,
+    );
+    this.logger.debug(
+      `[${requestId}] Update data: ${JSON.stringify(updateDealDto)}`,
+      this.context,
+    );
+
+    try {
+      const deal = await this.dealsService.update(id, updateDealDto);
+
+      // Exit logging
+      this.logger.log(
+        `[${requestId}] EXIT: PATCH /deals/${id} - Deal updated`,
+        this.context,
+      );
+
+      return deal;
+    } catch (error) {
+      this.logger.error(
+        `[${requestId}] ERROR: PATCH /deals/${id} failed - ${error.message}`,
+        error.stack,
+        this.context,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * DELETE /deals/:id
+   * Delete a deal
+   */
+  @Delete(':id')
+  async delete(
+    @Param('id', new ParseUUIDPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST }))
+    id: string,
+  ): Promise<{ success: boolean }> {
+    const requestId = this.generateRequestId();
+
+    // Entry logging
+    this.logger.log(
+      `[${requestId}] ENTRY: DELETE /deals/${id}`,
+      this.context,
+    );
+
+    try {
+      await this.dealsService.delete(id);
+
+      // Exit logging
+      this.logger.log(
+        `[${requestId}] EXIT: DELETE /deals/${id} - Deal deleted`,
+        this.context,
+      );
+
+      return { success: true };
+    } catch (error) {
+      this.logger.error(
+        `[${requestId}] ERROR: DELETE /deals/${id} failed - ${error.message}`,
         error.stack,
         this.context,
       );

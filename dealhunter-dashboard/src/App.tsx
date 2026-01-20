@@ -19,6 +19,7 @@ import { ColorModeContextProvider } from "./contexts/color-mode";
 import { DealList } from "./pages/deals/list";
 import { PendingDealList } from "./pages/pending-deals/list";
 import { TroubleshootingPage } from "./pages/troubleshooting";
+import { ManualDealCreate } from "./pages/manual-deal/create";
 import { CustomTitle } from "./components/CustomTitle";
 import { Login } from "./pages/login";
 import { authProvider } from "./providers/auth";
@@ -45,6 +46,11 @@ function App() {
                     name: "pending-deals",
                     list: "/pending-deals",
                     meta: { label: "Pending Deals" }
+                  },
+                  {
+                    name: "manual-deal",
+                    create: "/manual-deal/create",
+                    meta: { label: "Add Manual Deal" }
                   },
                   {
                     name: "troubleshooting",
@@ -81,6 +87,9 @@ function App() {
                     </Route>
                     <Route path="troubleshooting">
                       <Route index element={<TroubleshootingPage />} />
+                    </Route>
+                    <Route path="manual-deal">
+                      <Route path="create" element={<ManualDealCreate />} />
                     </Route>
                   </Route>
 
