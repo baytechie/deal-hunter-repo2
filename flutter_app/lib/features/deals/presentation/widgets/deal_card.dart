@@ -110,7 +110,7 @@ class DealCard extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       // Title (compact, no Expanded)
                       Text(
@@ -120,18 +120,14 @@ class DealCard extends ConsumerWidget {
                         style: AppTypography.titleMedium,
                       ),
 
-                      const SizedBox(height: 4),
+                      // Promo Code Section (fills the middle space)
+                      _buildPromoCodeBanner(context),
 
                       // Price Section
                       _buildPriceSection(),
 
-                      const SizedBox(height: 6),
-
-                      // Promo Code or Engagement Row
-                      if (deal.couponCode != null || deal.promoDescription != null)
-                        _buildPromoSection(context)
-                      else
-                        _buildSavingsCallout(),
+                      // Savings/Vote Row
+                      _buildSavingsCallout(),
                     ],
                   ),
                 ),
@@ -354,6 +350,71 @@ class DealCard extends ConsumerWidget {
           ),
         );
       },
+    );
+  }
+
+  /// Build promo code banner for the middle section (only when promo exists)
+  Widget _buildPromoCodeBanner(BuildContext context) {
+    final hasPromo = deal.couponCode != null || deal.promoDescription != null;
+
+    if (!hasPromo) {
+      // Return empty space when no promo code
+      return const SizedBox.shrink();
+    }
+
+    return GestureDetector(
+      onTap: () => _copyPromoCode(context),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              AppColors.primarySurface,
+              AppColors.primarySurface.withOpacity(0.7),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          border: Border.all(color: AppColors.primaryLight, width: 1),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.local_offer_rounded,
+              size: 14,
+              color: AppColors.primary,
+            ),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                deal.couponCode ?? deal.promoDescription ?? 'PROMO',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'monospace',
+                  color: AppColors.primaryDark,
+                  letterSpacing: 0.5,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Container(
+              padding: const EdgeInsets.all(3),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: const Icon(
+                Icons.copy_rounded,
+                size: 12,
+                color: AppColors.primary,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
