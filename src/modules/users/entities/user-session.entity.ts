@@ -34,13 +34,13 @@ export class UserSession {
   @Column({ type: 'varchar', length: 45, nullable: true })
   ipAddress: string | null;
 
-  @Column({ type: 'datetime' })
+  @Column()
   expiresAt: Date;
 
   @CreateDateColumn()
   createdAt: Date;
 
-  @Column({ type: 'datetime', nullable: true })
+  @Column({ nullable: true })
   lastUsedAt: Date;
 
   /**

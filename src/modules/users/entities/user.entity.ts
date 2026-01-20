@@ -45,7 +45,7 @@ export class User {
   notificationPreferences: string;
 
   // Metadata
-  @Column({ type: 'datetime', nullable: true })
+  @Column({ nullable: true })
   lastLoginAt: Date | null;
 
   @CreateDateColumn()
