@@ -69,7 +69,16 @@
       "mcp__render__update_static_site",
       "Bash(npm test)",
       "Bash(npm run lint)",
-      "WebFetch(domain:webservices.amazon.com)"
+      "WebFetch(domain:webservices.amazon.com)",
+      "Bash(timeout /t 10 /nobreak)",
+      "Bash(timeout /t 15)",
+      "WebFetch(domain:dashboard.render.com)",
+      "WebFetch(domain:medium.com)",
+      "WebFetch(domain:developer.x.com)",
+      "WebFetch(domain:docs.x.com)",
+      "WebFetch(domain:devcommunity.x.com)",
+      "Bash(git reset:*)",
+      "WebFetch(domain:dealhunter-app.onrender.com)"
     ]
   }
 }

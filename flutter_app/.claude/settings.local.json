@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter analyze:*)",
+      "Bash(flutter build:*)",
+      "Bash(flutter run:*)",
+      "Bash(timeout:*)",
+      "Bash(ping:*)",
+      "Bash(curl:*)",
+      "Bash(git add:*)",
+      "mcp__render__list_services",
+      "Bash(git commit:*)",
+      "mcp__render__list_deploys",
+      "mcp__render__get_deploy"
+    ]
+  }
+}
