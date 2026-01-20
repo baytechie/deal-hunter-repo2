@@ -18,7 +18,10 @@ import 'package:money_saver_deals/features/saved/presentation/providers/saved_de
 /// - Heart to save deals
 /// - Buy button to open affiliate link
 class FlipFeedPage extends ConsumerStatefulWidget {
-  const FlipFeedPage({super.key});
+  /// Optional deal ID to scroll to on load (used when navigating from notifications)
+  final String? initialDealId;
+
+  const FlipFeedPage({super.key, this.initialDealId});
 
   @override
   ConsumerState<FlipFeedPage> createState() => _FlipFeedPageState();
@@ -43,6 +46,14 @@ class _FlipFeedPageState extends ConsumerState<FlipFeedPage> {
     List<Deal> feedDeals = [];
     if (dealsState is DealsSuccess) {
       feedDeals = dealsState.deals;
+    }
+
+    // Check for initialDealId from notification tap
+    final initialDealId = widget.initialDealId;
+    if (initialDealId != null) {
+      // Load deals and scroll to the specified deal
+      ref.read(flipFeedProvider.notifier).loadDealsAndScrollTo(initialDealId);
+      return;
     }
 
     if (selectedDeal != null && feedDeals.isNotEmpty) {

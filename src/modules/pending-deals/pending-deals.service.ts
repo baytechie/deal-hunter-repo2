@@ -3,6 +3,7 @@ import {
   Inject,
   NotFoundException,
   ConflictException,
+  Optional,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -17,6 +18,7 @@ import {
 import { AmazonPaapiService } from '../amazon/services/amazon-paapi.service';
 import { AffiliateService } from '../deals/services/affiliate.service';
 import { LoggerService } from '../../shared/services/logger.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { SyncDealsDto } from './dto/sync-deals.dto';
 import { ApproveDealDto } from './dto/approve-deal.dto';
 import { RejectDealDto } from './dto/reject-deal.dto';
@@ -38,6 +40,7 @@ export class PendingDealsService {
     private readonly amazonPaapiService: AmazonPaapiService,
     private readonly affiliateService: AffiliateService,
     private readonly logger: LoggerService,
+    @Optional() private readonly notificationsService?: NotificationsService,
   ) {}
 
   /**
@@ -196,6 +199,21 @@ export class PendingDealsService {
       `Pending deal ${id} approved by ${userId}, created deal ${savedDeal.id}`,
       this.context,
     );
+
+    // Trigger new deal notification
+    if (this.notificationsService) {
+      try {
+        await this.notificationsService.createNewDealNotification(
+          savedDeal.id,
+          savedDeal.title,
+          savedDeal.price,
+          savedDeal.discountPercentage,
+          savedDeal.imageUrl,
+        );
+      } catch (error) {
+        this.logger.warn(`Failed to create notification for deal: ${error}`, this.context);
+      }
+    }
 
     return savedDeal;
   }

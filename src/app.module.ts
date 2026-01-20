@@ -9,9 +9,11 @@ import { AuthModule } from './modules/auth/auth.module';
 import { AmazonModule } from './modules/amazon/amazon.module';
 import { PendingDealsModule } from './modules/pending-deals/pending-deals.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 import { Deal } from './modules/deals/entities/deal.entity';
 import { AdminUser } from './modules/auth/entities/admin-user.entity';
 import { PendingDeal } from './modules/pending-deals/entities/pending-deal.entity';
+import { Notification } from './modules/notifications/entities/notification.entity';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -28,7 +30,7 @@ const getDatabaseConfig = () => {
     return {
       type: 'postgres' as const,
       url: process.env.DATABASE_URL,
-      entities: [Deal, AdminUser, PendingDeal],
+      entities: [Deal, AdminUser, PendingDeal, Notification],
       synchronize: true,
       ssl: {
         rejectUnauthorized: false,
@@ -40,7 +42,7 @@ const getDatabaseConfig = () => {
   return {
     type: 'sqlite' as const,
     database: process.env.DATABASE_PATH || path.join(dataDir, 'deals.db'),
-    entities: [Deal, AdminUser, PendingDeal],
+    entities: [Deal, AdminUser, PendingDeal, Notification],
     synchronize: true,
     logging: process.env.NODE_ENV === 'development',
   };
@@ -56,6 +58,7 @@ const getDatabaseConfig = () => {
     // TypeORM configuration - PostgreSQL in production, SQLite locally
     TypeOrmModule.forRoot(getDatabaseConfig()),
     SharedModule,
+    NotificationsModule,
     DealsModule,
     AuthModule,
     AmazonModule,

@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:money_saver_deals/features/deals/data/models/deal_model.dart';
+import 'package:money_saver_deals/features/notifications/data/models/notification_model.dart';
 
 /// API Client for making HTTP requests to the backend
 class ApiClient {
@@ -128,6 +129,43 @@ class ApiClient {
         return (categoriesList as List<dynamic>).cast<String>();
       }
       return [];
+    } on DioException {
+      rethrow;
+    }
+  }
+
+  // ============ NOTIFICATION ENDPOINTS ============
+
+  /// Fetch all recent notifications (last 7 days)
+  Future<List<NotificationModel>> getNotifications({int limit = 50}) async {
+    try {
+      final response = await dio.get(
+        '/notifications',
+        queryParameters: {'limit': limit},
+      );
+
+      if (response.statusCode == 200) {
+        final notificationsList = response.data is List ? response.data : <dynamic>[];
+        return (notificationsList as List<dynamic>)
+            .map((n) => NotificationModel.fromJson(n as Map<String, dynamic>))
+            .toList();
+      }
+      return [];
+    } on DioException {
+      rethrow;
+    }
+  }
+
+  /// Fetch unread notification count for badge display
+  Future<int> getUnreadNotificationCount() async {
+    try {
+      final response = await dio.get('/notifications/unread-count');
+
+      if (response.statusCode == 200) {
+        final data = response.data as Map<String, dynamic>;
+        return data['count'] as int? ?? 0;
+      }
+      return 0;
     } on DioException {
       rethrow;
     }

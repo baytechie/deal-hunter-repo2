@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Deal } from './entities/deal.entity';
 import { DealsController } from './deals.controller';
@@ -6,6 +6,7 @@ import { DealsService } from './deals.service';
 import { TypeOrmDealsRepository } from './repositories/typeorm-deals.repository';
 import { DEALS_REPOSITORY } from './repositories/deals.repository.interface';
 import { AffiliateService } from './services/affiliate.service';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 /**
  * DealsModule - Feature module for deals functionality
@@ -20,7 +21,7 @@ import { AffiliateService } from './services/affiliate.service';
  * - AffiliateService: Affiliate URL tagging and validation
  */
 @Module({
-  imports: [TypeOrmModule.forFeature([Deal])],
+  imports: [TypeOrmModule.forFeature([Deal]), forwardRef(() => NotificationsModule)],
   controllers: [DealsController],
   providers: [
     DealsService,

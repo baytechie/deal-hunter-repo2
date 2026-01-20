@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PendingDeal } from './entities/pending-deal.entity';
 import { Deal } from '../deals/entities/deal.entity';
@@ -8,6 +8,7 @@ import { TypeOrmPendingDealsRepository } from './repositories/typeorm-pending-de
 import { PENDING_DEALS_REPOSITORY } from './repositories/pending-deals.repository.interface';
 import { AmazonModule } from '../amazon/amazon.module';
 import { DealsModule } from '../deals/deals.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { SharedModule } from '../../shared/shared.module';
 
 /**
@@ -18,6 +19,7 @@ import { SharedModule } from '../../shared/shared.module';
     TypeOrmModule.forFeature([PendingDeal, Deal]),
     AmazonModule,
     DealsModule,
+    forwardRef(() => NotificationsModule),
     SharedModule,
   ],
   controllers: [PendingDealsController],

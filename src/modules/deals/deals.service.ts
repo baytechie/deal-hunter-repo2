@@ -1,4 +1,4 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, Optional } from '@nestjs/common';
 import { Deal } from './entities/deal.entity';
 import {
   IDealsRepository,
@@ -10,6 +10,7 @@ import {
 import { CreateDealDto } from './dto/create-deal.dto';
 import { LoggerService } from '../../shared/services/logger.service';
 import { AffiliateService } from './services/affiliate.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 /**
  * DealsService - Handles business logic for deals
@@ -33,6 +34,7 @@ export class DealsService {
     private readonly dealsRepository: IDealsRepository,
     private readonly logger: LoggerService,
     private readonly affiliateService: AffiliateService,
+    @Optional() private readonly notificationsService?: NotificationsService,
   ) {}
 
   /**
@@ -131,7 +133,22 @@ export class DealsService {
       `Deal created successfully: ${deal.id} with affiliate link: ${sanitizedAffiliateLink}`,
       this.context,
     );
-    
+
+    // Trigger new deal notification
+    if (this.notificationsService) {
+      try {
+        await this.notificationsService.createNewDealNotification(
+          deal.id,
+          deal.title,
+          deal.price,
+          deal.discountPercentage,
+          deal.imageUrl,
+        );
+      } catch (error) {
+        this.logger.warn(`Failed to create notification for deal: ${error}`, this.context);
+      }
+    }
+
     return deal;
   }
 
@@ -151,10 +168,13 @@ export class DealsService {
   async update(id: string, updateData: Partial<CreateDealDto>): Promise<Deal> {
     this.logger.debug(`Updating deal: ${id}`, this.context);
 
+    // Get existing deal for price comparison and discount calculation
+    const existingDeal = await this.findById(id);
+    const oldPrice = existingDeal.price;
+
     // Recalculate discount if prices changed
     let discountPercentage: number | undefined;
     if (updateData.originalPrice !== undefined || updateData.price !== undefined) {
-      const existingDeal = await this.findById(id);
       const originalPrice = updateData.originalPrice ?? existingDeal.originalPrice;
       const price = updateData.price ?? existingDeal.price;
       discountPercentage = this.calculateDiscountPercentage(originalPrice, price);
@@ -181,6 +201,33 @@ export class DealsService {
       `Deal updated successfully: ${id}${sanitizedAffiliateLink ? ` with updated affiliate link: ${sanitizedAffiliateLink}` : ''}`,
       this.context,
     );
+
+    // Trigger price change notification if price changed
+    if (this.notificationsService && updateData.price !== undefined && updateData.price !== oldPrice) {
+      try {
+        const newPrice = updateData.price;
+        if (newPrice < oldPrice) {
+          await this.notificationsService.createPriceDropNotification(
+            updatedDeal.id,
+            updatedDeal.title,
+            oldPrice,
+            newPrice,
+            updatedDeal.imageUrl,
+          );
+        } else if (newPrice > oldPrice) {
+          await this.notificationsService.createPriceIncreaseNotification(
+            updatedDeal.id,
+            updatedDeal.title,
+            oldPrice,
+            newPrice,
+            updatedDeal.imageUrl,
+          );
+        }
+      } catch (error) {
+        this.logger.warn(`Failed to create price notification: ${error}`, this.context);
+      }
+    }
+
     return updatedDeal;
   }
 
