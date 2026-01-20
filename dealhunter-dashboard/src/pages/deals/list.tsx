@@ -19,7 +19,6 @@ import { List, useTable, ImageField } from "@refinedev/antd";
 import { useUpdate, useDelete, useInvalidate } from "@refinedev/core";
 import dayjs from "dayjs";
 
-const { confirm } = Modal;
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -95,8 +94,11 @@ export const DealList = () => {
 
   const handleEdit = (record: Deal) => {
     setEditingDeal(record);
+    // Convert string prices to numbers for form validation
     form.setFieldsValue({
       ...record,
+      price: parseFloat(String(record.price)) || 0,
+      originalPrice: parseFloat(String(record.originalPrice)) || 0,
       expiryDate: record.expiryDate ? dayjs(record.expiryDate) : null,
     });
     setEditModalVisible(true);
@@ -135,29 +137,33 @@ export const DealList = () => {
   };
 
   const handleDelete = (record: Deal) => {
-    confirm({
+    Modal.confirm({
       title: "Are you sure you want to delete this deal?",
       icon: <ExclamationCircleOutlined />,
-      content: `"${record.title}" will be permanently deleted.`,
+      content: `"${record.title.substring(0, 50)}..." will be permanently deleted.`,
       okText: "Yes, Delete",
       okType: "danger",
       cancelText: "Cancel",
-      onOk() {
-        deleteDeal(
-          {
-            resource: "deals",
-            id: record.id,
-          },
-          {
-            onSuccess: () => {
-              message.success("Deal deleted successfully");
-              refreshTable();
+      onOk: () => {
+        return new Promise((resolve, reject) => {
+          deleteDeal(
+            {
+              resource: "deals",
+              id: record.id,
             },
-            onError: (error) => {
-              message.error(`Failed to delete deal: ${error.message}`);
-            },
-          }
-        );
+            {
+              onSuccess: () => {
+                message.success("Deal deleted successfully");
+                refreshTable();
+                resolve(true);
+              },
+              onError: (error) => {
+                message.error(`Failed to delete deal: ${error.message}`);
+                reject(error);
+              },
+            }
+          );
+        });
       },
     });
   };
