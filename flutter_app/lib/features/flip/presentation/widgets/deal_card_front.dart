@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:money_saver_deals/features/deals/domain/entities/deal.dart';
 
 /// DealCardFront - The initial view of a deal card
@@ -214,6 +215,77 @@ class DealCardFront extends StatelessWidget {
     );
   }
 
+  Widget _buildCouponCodeSection(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: GestureDetector(
+        onTap: () {
+          Clipboard.setData(ClipboardData(text: deal.couponCode!));
+          HapticFeedback.mediumImpact();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.check_circle, color: Colors.white, size: 20),
+                  const SizedBox(width: 8),
+                  Text('Coupon copied: ${deal.couponCode}'),
+                ],
+              ),
+              backgroundColor: Colors.green[700],
+              duration: const Duration(seconds: 2),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF1F5E8),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Colors.green[300]!),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.local_offer,
+                color: Colors.green[700],
+                size: 16,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                deal.couponCode!,
+                style: TextStyle(
+                  fontFamily: 'monospace',
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green[800],
+                  letterSpacing: 1,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Colors.green[600],
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Icon(
+                  Icons.copy,
+                  color: Colors.white,
+                  size: 14,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildDealInfo(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -250,6 +322,10 @@ class DealCardFront extends StatelessWidget {
               height: 1.3,
             ),
           ),
+
+          // Coupon Code (only if available)
+          if (deal.couponCode != null && deal.couponCode!.isNotEmpty)
+            _buildCouponCodeSection(context),
 
           const Spacer(),
 
