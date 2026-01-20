@@ -14,13 +14,14 @@ import routerProvider, {
   UnsavedChangesNotifier,
 } from "@refinedev/react-router";
 import { App as AntdApp } from "antd";
-import { PlusCircleOutlined } from "@ant-design/icons";
+import { PlusCircleOutlined, ShareAltOutlined } from "@ant-design/icons";
 import { HashRouter, Outlet, Route, Routes } from "react-router-dom";
 import { ColorModeContextProvider } from "./contexts/color-mode";
 import { DealList } from "./pages/deals/list";
 import { PendingDealList } from "./pages/pending-deals/list";
 import { TroubleshootingPage } from "./pages/troubleshooting";
 import { ManualDealCreate } from "./pages/manual-deal/create";
+import { SocialMediaPage } from "./pages/social-media";
 import { CustomTitle } from "./components/CustomTitle";
 import { Login } from "./pages/login";
 import { authProvider } from "./providers/auth";
@@ -61,6 +62,14 @@ function App() {
                     list: "/troubleshooting",
                     meta: { label: "Troubleshooting" }
                   },
+                  {
+                    name: "social-media",
+                    list: "/social-media",
+                    meta: {
+                      label: "Social Media",
+                      icon: <ShareAltOutlined />
+                    }
+                  },
                 ]}
                 options={{
                   syncWithLocation: true,
@@ -93,6 +102,9 @@ function App() {
                       <Route index element={<TroubleshootingPage />} />
                     </Route>
                     <Route path="manual-deal/create" element={<ManualDealCreate />} />
+                    <Route path="social-media">
+                      <Route index element={<SocialMediaPage />} />
+                    </Route>
                   </Route>
 
                   <Route path="*" element={<ErrorComponent />} />
