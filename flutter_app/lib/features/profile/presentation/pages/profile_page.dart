@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:money_saver_deals/core/theme/app_theme.dart';
+import 'package:money_saver_deals/core/widgets/app_footer.dart';
 import 'package:money_saver_deals/core/widgets/app_header.dart';
 
 /// Profile Page - User account and authentication
@@ -302,6 +303,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                     ),
                   ],
                 ),
+
+                const SizedBox(height: 40),
+
+                // App Footer with legal links and contact
+                const AppFooter(),
                     ],
                   ),
                 ),
