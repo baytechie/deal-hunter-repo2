@@ -16,7 +16,7 @@ import {
 } from "antd";
 import { EditOutlined, DeleteOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import { List, useTable, ImageField } from "@refinedev/antd";
-import { useUpdate, useDelete } from "@refinedev/core";
+import { useUpdate, useDelete, useInvalidate } from "@refinedev/core";
 import dayjs from "dayjs";
 
 const { confirm } = Modal;
@@ -80,7 +80,15 @@ export const DealList = () => {
 
   const { mutate: updateDeal } = useUpdate();
   const { mutate: deleteDeal } = useDelete();
+  const invalidate = useInvalidate();
   const [isUpdating, setIsUpdating] = useState(false);
+
+  const refreshTable = () => {
+    invalidate({
+      resource: "deals/active",
+      invalidates: ["list"],
+    });
+  };
 
   const isLoading = tableProps?.loading ?? false;
   const dataSource = tableProps?.dataSource ?? [];
@@ -116,6 +124,7 @@ export const DealList = () => {
           setEditModalVisible(false);
           setEditingDeal(null);
           form.resetFields();
+          refreshTable();
         },
         onError: (error) => {
           setIsUpdating(false);
@@ -142,6 +151,7 @@ export const DealList = () => {
           {
             onSuccess: () => {
               message.success("Deal deleted successfully");
+              refreshTable();
             },
             onError: (error) => {
               message.error(`Failed to delete deal: ${error.message}`);
