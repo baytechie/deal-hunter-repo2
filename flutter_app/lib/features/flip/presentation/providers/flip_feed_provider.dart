@@ -59,10 +59,12 @@ class FlipFeedNotifier extends StateNotifier<FlipFeedState> {
   }
 
   /// Load deals for the flip feed
+  /// Loads all available deals (up to 100) for smooth swiping experience
   Future<void> loadDeals() async {
     state = state.copyWith(isLoading: true, error: null);
 
-    final result = await _repository.getAllDeals();
+    // Load a large batch of deals for the flip feed (100 should cover most cases)
+    final result = await _repository.getAllDeals(limit: 100);
 
     result.when(
       success: (deals) {
