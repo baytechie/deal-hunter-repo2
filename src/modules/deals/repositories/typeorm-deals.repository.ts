@@ -12,6 +12,7 @@ import {
   DealFilterOptions,
   PaginationOptions,
   PaginatedResult,
+  SortingOptions,
 } from './deals.repository.interface';
 
 /**
@@ -34,15 +35,21 @@ export class TypeOrmDealsRepository implements IDealsRepository {
   async findAll(
     filters?: DealFilterOptions,
     pagination?: PaginationOptions,
+    sorting?: SortingOptions,
   ): Promise<PaginatedResult<Deal>> {
     const where = this.buildWhereClause(filters);
     const page = pagination?.page || 1;
     const limit = pagination?.limit || 10;
     const skip = (page - 1) * limit;
 
+    // Build order object based on sorting options
+    const order: Record<string, 'ASC' | 'DESC'> = sorting?.field
+      ? { [sorting.field]: sorting.order || 'DESC' }
+      : { createdAt: 'DESC' };
+
     const [data, total] = await this.dealRepository.findAndCount({
       where,
-      order: { createdAt: 'DESC' },
+      order,
       skip,
       take: limit,
     });
@@ -124,6 +131,7 @@ export class TypeOrmDealsRepository implements IDealsRepository {
   async findActiveDeals(
     filters?: DealFilterOptions,
     pagination?: PaginationOptions,
+    sorting?: SortingOptions,
   ): Promise<PaginatedResult<Deal>> {
     const page = pagination?.page || 1;
     const limit = pagination?.limit || 10;
@@ -161,7 +169,11 @@ export class TypeOrmDealsRepository implements IDealsRepository {
       queryBuilder.andWhere('deal.price <= :maxPrice', { maxPrice: filters.maxPrice });
     }
 
-    queryBuilder.orderBy('deal.createdAt', 'DESC');
+    // Apply sorting
+    const sortField = sorting?.field || 'createdAt';
+    const sortOrder = sorting?.order || 'DESC';
+    queryBuilder.orderBy(`deal.${sortField}`, sortOrder);
+
     queryBuilder.skip(skip).take(limit);
 
     const [data, total] = await queryBuilder.getManyAndCount();

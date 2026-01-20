@@ -1,4 +1,4 @@
-import { IsOptional, IsString, IsNumber, IsBoolean, Min, Max } from 'class-validator';
+import { IsOptional, IsString, IsNumber, IsBoolean, Min, Max, IsIn } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 
 /**
@@ -44,6 +44,17 @@ export class GetDealsQueryDto {
   @Min(1)
   @Max(100)
   limit?: number = 10;
+
+  @IsOptional()
+  @IsString()
+  @IsIn(['title', 'price', 'originalPrice', 'discountPercentage', 'category', 'createdAt', 'updatedAt'])
+  sortField?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsIn(['ASC', 'DESC', 'asc', 'desc'])
+  @Transform(({ value }) => value?.toUpperCase())
+  sortOrder?: 'ASC' | 'DESC';
 }
 
 /**

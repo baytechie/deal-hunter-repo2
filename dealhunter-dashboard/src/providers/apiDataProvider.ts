@@ -50,7 +50,7 @@ const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
 };
 
 export const apiDataProvider: DataProvider = {
-  getList: async ({ resource, pagination, filters, sorters: _sorters }) => {
+  getList: async ({ resource, pagination, filters, sorters }) => {
     // Refine v5 uses 'currentPage' instead of 'current' for pagination
     const currentPage = pagination?.currentPage ?? 1;
     const pageSize = pagination?.pageSize ?? 10;
@@ -75,6 +75,14 @@ export const apiDataProvider: DataProvider = {
           params.append(filter.field, String(filter.value));
         }
       });
+    }
+
+    // Apply sorting
+    if (sorters && sorters.length > 0) {
+      const sorter = sorters[0]; // Use first sorter
+      params.append("sortField", sorter.field);
+      params.append("sortOrder", sorter.order.toUpperCase());
+      log.debug("Sorting params", { field: sorter.field, order: sorter.order });
     }
 
     const url = `${API_URL}/${endpoint}?${params.toString()}`;

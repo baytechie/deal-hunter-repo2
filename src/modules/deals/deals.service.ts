@@ -6,6 +6,7 @@ import {
   DealFilterOptions,
   PaginationOptions,
   PaginatedResult,
+  SortingOptions,
 } from './repositories/deals.repository.interface';
 import { CreateDealDto } from './dto/create-deal.dto';
 import { LoggerService } from '../../shared/services/logger.service';
@@ -38,14 +39,15 @@ export class DealsService {
   ) {}
 
   /**
-   * Get all deals with optional filtering and pagination
+   * Get all deals with optional filtering, pagination, and sorting
    */
   async findAll(
     filters?: DealFilterOptions,
     pagination?: PaginationOptions,
+    sorting?: SortingOptions,
   ): Promise<PaginatedResult<Deal>> {
-    this.logger.debug(`Finding all deals with filters: ${JSON.stringify(filters)}`, this.context);
-    return this.dealsRepository.findAll(filters, pagination);
+    this.logger.debug(`Finding all deals with filters: ${JSON.stringify(filters)}, sorting: ${JSON.stringify(sorting)}`, this.context);
+    return this.dealsRepository.findAll(filters, pagination, sorting);
   }
 
   /**
@@ -315,11 +317,12 @@ export class DealsService {
   async findActiveDeals(
     filters?: DealFilterOptions,
     pagination?: PaginationOptions,
+    sorting?: SortingOptions,
   ): Promise<PaginatedResult<Deal>> {
     this.logger.debug(
-      `Finding active deals with filters: ${JSON.stringify(filters)}`,
+      `Finding active deals with filters: ${JSON.stringify(filters)}, sorting: ${JSON.stringify(sorting)}`,
       this.context,
     );
-    return this.dealsRepository.findActiveDeals(filters, pagination);
+    return this.dealsRepository.findActiveDeals(filters, pagination, sorting);
   }
 }

@@ -20,6 +20,14 @@ export interface PaginationOptions {
 }
 
 /**
+ * Sorting options
+ */
+export interface SortingOptions {
+  field: string;
+  order: 'ASC' | 'DESC';
+}
+
+/**
  * Paginated result wrapper
  */
 export interface PaginatedResult<T> {
@@ -39,11 +47,12 @@ export interface PaginatedResult<T> {
  */
 export interface IDealsRepository {
   /**
-   * Find all deals with optional filtering and pagination
+   * Find all deals with optional filtering, pagination, and sorting
    */
   findAll(
     filters?: DealFilterOptions,
     pagination?: PaginationOptions,
+    sorting?: SortingOptions,
   ): Promise<PaginatedResult<Deal>>;
 
   /**
@@ -97,6 +106,7 @@ export interface IDealsRepository {
   findActiveDeals(
     filters?: DealFilterOptions,
     pagination?: PaginationOptions,
+    sorting?: SortingOptions,
   ): Promise<PaginatedResult<Deal>>;
 }
 

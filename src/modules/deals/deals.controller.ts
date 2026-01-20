@@ -78,7 +78,11 @@ export class DealsController {
         limit: query.limit ?? 10,
       };
 
-      const result = await this.dealsService.findAll(filters, pagination);
+      const sorting = query.sortField
+        ? { field: query.sortField, order: query.sortOrder || 'DESC' as const }
+        : undefined;
+
+      const result = await this.dealsService.findAll(filters, pagination, sorting);
 
       // Exit logging
       this.logger.log(
@@ -301,7 +305,11 @@ export class DealsController {
         limit: query.limit ?? 10,
       };
 
-      const result = await this.dealsService.findActiveDeals(filters, pagination);
+      const sorting = query.sortField
+        ? { field: query.sortField, order: query.sortOrder || 'DESC' as const }
+        : undefined;
+
+      const result = await this.dealsService.findActiveDeals(filters, pagination, sorting);
 
       // Exit logging
       this.logger.log(
