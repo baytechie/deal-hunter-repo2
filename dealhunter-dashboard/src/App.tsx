@@ -14,6 +14,7 @@ import routerProvider, {
   UnsavedChangesNotifier,
 } from "@refinedev/react-router";
 import { App as AntdApp } from "antd";
+import { PlusCircleOutlined } from "@ant-design/icons";
 import { HashRouter, Outlet, Route, Routes } from "react-router-dom";
 import { ColorModeContextProvider } from "./contexts/color-mode";
 import { DealList } from "./pages/deals/list";
@@ -49,8 +50,11 @@ function App() {
                   },
                   {
                     name: "manual-deal",
-                    create: "/manual-deal/create",
-                    meta: { label: "Add Manual Deal" }
+                    list: "/manual-deal/create",
+                    meta: {
+                      label: "Add Manual Deal",
+                      icon: <PlusCircleOutlined />
+                    }
                   },
                   {
                     name: "troubleshooting",
@@ -88,9 +92,7 @@ function App() {
                     <Route path="troubleshooting">
                       <Route index element={<TroubleshootingPage />} />
                     </Route>
-                    <Route path="manual-deal">
-                      <Route path="create" element={<ManualDealCreate />} />
-                    </Route>
+                    <Route path="manual-deal/create" element={<ManualDealCreate />} />
                   </Route>
 
                   <Route path="*" element={<ErrorComponent />} />
