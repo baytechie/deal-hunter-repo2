@@ -88,6 +88,7 @@ class _FlipCardWidgetState extends State<FlipCardWidget>
                     isSaved: widget.isSaved,
                     onSaveToggle: widget.onSaveToggle,
                     onFlipPressed: _toggleCard,
+                    onBuyPressed: widget.onBuyPressed,
                     currentIndex: widget.currentIndex,
                     totalDeals: widget.totalDeals,
                   )

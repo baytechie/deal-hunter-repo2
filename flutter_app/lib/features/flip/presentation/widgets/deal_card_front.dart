@@ -9,6 +9,7 @@ class DealCardFront extends StatelessWidget {
   final bool isSaved;
   final VoidCallback onSaveToggle;
   final VoidCallback onFlipPressed;
+  final VoidCallback onBuyPressed;
   final int currentIndex;
   final int totalDeals;
 
@@ -18,6 +19,7 @@ class DealCardFront extends StatelessWidget {
     required this.isSaved,
     required this.onSaveToggle,
     required this.onFlipPressed,
+    required this.onBuyPressed,
     required this.currentIndex,
     required this.totalDeals,
   });
@@ -324,27 +326,73 @@ class DealCardFront extends StatelessWidget {
 
           const SizedBox(height: 12),
 
-          // Likes counter
+          // Bottom row: Likes counter on left, Buy Now button on right
           Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Icon(Icons.favorite, color: Colors.red[300], size: 16),
-              const SizedBox(width: 4),
-              Text(
-                '${deal.likes} likes',
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 12,
-                ),
+              // Likes counter
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.favorite, color: Colors.red[300], size: 16),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${deal.likes} likes',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Icon(Icons.comment, color: Colors.grey[400], size: 16),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${deal.comments}',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 16),
-              Icon(Icons.comment, color: Colors.grey[400], size: 16),
-              const SizedBox(width: 4),
-              Text(
-                '${deal.comments} comments',
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 12,
+
+              // Buy Now button
+              GestureDetector(
+                onTap: onBuyPressed,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF4CAF50), Color(0xFF45A049)],
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF4CAF50).withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.shopping_cart,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 6),
+                      const Text(
+                        'BUY NOW',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
