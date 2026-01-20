@@ -122,10 +122,21 @@ export class TwitterService {
         postId,
         postUrl,
       };
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      this.logger.error(`Failed to post tweet: ${errorMessage}`, this.context);
-      return { success: false, error: errorMessage };
+    } catch (error: any) {
+      // Extract detailed error info from Twitter API response
+      let errorMessage = 'Unknown error';
+      let errorDetails = '';
+
+      if (error?.data) {
+        // Twitter API v2 error format
+        errorDetails = JSON.stringify(error.data);
+        errorMessage = error.data?.detail || error.data?.title || error.message;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+
+      this.logger.error(`Failed to post tweet: ${errorMessage}. Details: ${errorDetails}`, this.context);
+      return { success: false, error: `${errorMessage}${errorDetails ? ` - ${errorDetails}` : ''}` };
     }
   }
 
