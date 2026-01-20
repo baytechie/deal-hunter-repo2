@@ -77,12 +77,16 @@ export class NotificationsService implements OnModuleInit {
   ): Promise<Notification> {
     this.logger.debug(`Creating new deal notification for: ${dealTitle}`, this.context);
 
+    // Ensure numeric values are proper numbers (may come as strings from DB)
+    const priceNum = Number(price) || 0;
+    const discountNum = Number(discountPercentage) || 0;
+
     const data: CreateNotificationData = {
       type: NotificationType.NEW_DEAL,
       title: 'New Deal Alert!',
-      message: `${dealTitle} - ${discountPercentage.toFixed(0)}% off at $${price.toFixed(2)}`,
+      message: `${dealTitle} - ${discountNum.toFixed(0)}% off at $${priceNum.toFixed(2)}`,
       dealId,
-      newPrice: price,
+      newPrice: priceNum,
       imageUrl,
     };
 
@@ -103,16 +107,19 @@ export class NotificationsService implements OnModuleInit {
   ): Promise<Notification> {
     this.logger.debug(`Creating price drop notification for: ${dealTitle}`, this.context);
 
-    const savings = oldPrice - newPrice;
-    const percentDrop = ((savings / oldPrice) * 100).toFixed(0);
+    // Ensure numeric values are proper numbers (may come as strings from DB)
+    const oldPriceNum = Number(oldPrice) || 0;
+    const newPriceNum = Number(newPrice) || 0;
+    const savings = oldPriceNum - newPriceNum;
+    const percentDrop = oldPriceNum > 0 ? ((savings / oldPriceNum) * 100).toFixed(0) : '0';
 
     const data: CreateNotificationData = {
       type: NotificationType.PRICE_DROP,
       title: 'Price Drop!',
-      message: `${dealTitle} dropped from $${oldPrice.toFixed(2)} to $${newPrice.toFixed(2)} (${percentDrop}% off)`,
+      message: `${dealTitle} dropped from $${oldPriceNum.toFixed(2)} to $${newPriceNum.toFixed(2)} (${percentDrop}% off)`,
       dealId,
-      oldPrice,
-      newPrice,
+      oldPrice: oldPriceNum,
+      newPrice: newPriceNum,
       imageUrl,
     };
 
@@ -133,15 +140,18 @@ export class NotificationsService implements OnModuleInit {
   ): Promise<Notification> {
     this.logger.debug(`Creating price increase notification for: ${dealTitle}`, this.context);
 
-    const increase = newPrice - oldPrice;
+    // Ensure numeric values are proper numbers (may come as strings from DB)
+    const oldPriceNum = Number(oldPrice) || 0;
+    const newPriceNum = Number(newPrice) || 0;
+    const increase = newPriceNum - oldPriceNum;
 
     const data: CreateNotificationData = {
       type: NotificationType.PRICE_INCREASE,
       title: 'Price Update',
-      message: `${dealTitle} increased from $${oldPrice.toFixed(2)} to $${newPrice.toFixed(2)} (+$${increase.toFixed(2)})`,
+      message: `${dealTitle} increased from $${oldPriceNum.toFixed(2)} to $${newPriceNum.toFixed(2)} (+$${increase.toFixed(2)})`,
       dealId,
-      oldPrice,
-      newPrice,
+      oldPrice: oldPriceNum,
+      newPrice: newPriceNum,
       imageUrl,
     };
 
