@@ -110,7 +110,7 @@ class DealCard extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       // Title (compact, no Expanded)
                       Text(
@@ -125,7 +125,7 @@ class DealCard extends ConsumerWidget {
                       // Price Section
                       _buildPriceSection(),
 
-                      const Spacer(),
+                      const SizedBox(height: 6),
 
                       // Promo Code or Engagement Row
                       if (deal.couponCode != null || deal.promoDescription != null)
