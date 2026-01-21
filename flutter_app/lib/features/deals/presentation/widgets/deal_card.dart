@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:money_saver_deals/core/theme/app_theme.dart';
-import 'package:money_saver_deals/core/widgets/share_button.dart';
+import 'package:money_saver_deals/core/widgets/share_bottom_sheet.dart';
 import 'package:money_saver_deals/features/deals/domain/entities/deal.dart';
 import 'package:money_saver_deals/features/saved/presentation/providers/saved_deals_provider.dart';
 import 'package:money_saver_deals/app_shell.dart';
@@ -170,65 +170,6 @@ class DealCard extends ConsumerWidget {
                     ),
                   ),
                 ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  /// Build action buttons row with Save and Share buttons
-  Widget _buildActionButtonsRow(WidgetRef ref) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        // Save button (heart)
-        _buildCompactSaveButton(ref),
-        const SizedBox(width: 8),
-        // Share button
-        ShareButton(deal: deal, size: ShareButtonSize.small),
-      ],
-    );
-  }
-
-  /// Build compact save button for action row
-  Widget _buildCompactSaveButton(WidgetRef ref) {
-    return Consumer(
-      builder: (context, ref, _) {
-        final savedDeals = ref.watch(savedDealsProvider);
-        final isSaved = savedDeals.any((d) => d.id == deal.id);
-
-        return Semantics(
-          label: isSaved
-              ? 'Remove ${deal.title} from saved deals'
-              : 'Save ${deal.title} to saved deals',
-          button: true,
-          child: GestureDetector(
-            onTap: () {
-              HapticFeedback.lightImpact();
-              ref.read(savedDealsProvider.notifier).toggleSave(deal);
-            },
-            child: Container(
-              width: 44,
-              height: 44,
-              alignment: Alignment.center,
-              child: Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: isSaved ? AppColors.errorSurface : AppColors.surface,
-                  shape: BoxShape.circle,
-                  boxShadow: AppShadows.subtleShadow,
-                  border: isSaved
-                      ? Border.all(color: AppColors.error, width: 2)
-                      : null,
-                ),
-                child: Icon(
-                  isSaved ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                  size: 18,
-                  color: isSaved ? AppColors.error : AppColors.textMuted,
-                ),
               ),
             ),
           ),
@@ -788,7 +729,13 @@ class DealCard extends ConsumerWidget {
   }
 
   /// Build View Deal button with integrated action buttons (compact version)
+  /// Optimized for iPhone 16 Pro Max and similar large phones with 2-column grid
   Widget _buildViewDealButtonWithActions(BuildContext context, WidgetRef ref, [bool isCompact = false]) {
+    // Use smaller action buttons to give more space to View Deal button
+    final actionButtonSize = isCompact ? 30.0 : 34.0;
+    final actionIconSize = isCompact ? 14.0 : 16.0;
+    final buttonSpacing = isCompact ? 4.0 : 6.0;
+
     return Row(
       children: [
         // View Deal Button (takes most space)
@@ -796,7 +743,10 @@ class DealCard extends ConsumerWidget {
           child: GestureDetector(
             onTap: () => _openDealLink(context),
             child: Container(
-              padding: EdgeInsets.symmetric(vertical: isCompact ? 8 : 10),
+              padding: EdgeInsets.symmetric(
+                vertical: isCompact ? 7 : 9,
+                horizontal: isCompact ? 8 : 12,
+              ),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [AppColors.primary, AppColors.primaryLight],
@@ -810,31 +760,35 @@ class DealCard extends ConsumerWidget {
                   ),
                 ],
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.open_in_new_rounded,
-                    size: isCompact ? 14 : 16,
-                    color: Colors.white,
-                  ),
-                  SizedBox(width: isCompact ? 4 : 6),
-                  Text(
-                    'View Deal',
-                    style: TextStyle(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.open_in_new_rounded,
+                      size: isCompact ? 12 : 14,
                       color: Colors.white,
-                      fontSize: isCompact ? 12 : 14,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.3,
                     ),
-                  ),
-                ],
+                    SizedBox(width: isCompact ? 3 : 5),
+                    Text(
+                      'View Deal',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: isCompact ? 11 : 13,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
         ),
-        SizedBox(width: isCompact ? 6 : 8),
-        // Save button
+        SizedBox(width: buttonSpacing),
+        // Save button - smaller for better fit
         Consumer(
           builder: (context, ref, _) {
             final savedDeals = ref.watch(savedDealsProvider);
@@ -846,33 +800,54 @@ class DealCard extends ConsumerWidget {
                 ref.read(savedDealsProvider.notifier).toggleSave(deal);
               },
               child: Container(
-                width: isCompact ? 34 : 40,
-                height: isCompact ? 34 : 40,
+                width: actionButtonSize,
+                height: actionButtonSize,
                 decoration: BoxDecoration(
                   color: isSaved ? AppColors.errorSurface : AppColors.surface,
-                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
                   border: Border.all(
                     color: isSaved ? AppColors.error : AppColors.border,
-                    width: 1.5,
+                    width: 1,
                   ),
                 ),
                 child: Icon(
                   isSaved ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                  size: isCompact ? 16 : 18,
+                  size: actionIconSize,
                   color: isSaved ? AppColors.error : AppColors.textMuted,
                 ),
               ),
             );
           },
         ),
-        SizedBox(width: isCompact ? 4 : 6),
-        // Share button
+        SizedBox(width: buttonSpacing),
+        // Share button - use custom compact version
         GestureDetector(
           onTap: () {
             HapticFeedback.lightImpact();
-            // Use the ShareButton logic
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (ctx) => ShareBottomSheet(deal: deal),
+            );
           },
-          child: ShareButton(deal: deal, size: ShareButtonSize.small, isCompact: isCompact),
+          child: Container(
+            width: actionButtonSize,
+            height: actionButtonSize,
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(AppRadius.sm),
+              border: Border.all(
+                color: AppColors.border,
+                width: 1,
+              ),
+            ),
+            child: Icon(
+              Icons.share_rounded,
+              size: actionIconSize,
+              color: AppColors.textMuted,
+            ),
+          ),
         ),
       ],
     );
