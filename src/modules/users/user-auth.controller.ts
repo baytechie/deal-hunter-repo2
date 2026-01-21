@@ -12,6 +12,7 @@ import { UserAuthService } from './user-auth.service';
 import {
   RegisterUserDto,
   LoginUserDto,
+  GoogleAuthDto,
   AuthResponse,
 } from './dto/user-auth.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -23,6 +24,7 @@ import { LoggerService } from '../../shared/services/logger.service';
  * Endpoints:
  * - POST /user-auth/register - Create new account
  * - POST /user-auth/login - Sign in with email/password
+ * - POST /user-auth/google - Sign in with Google OAuth
  * - POST /user-auth/refresh - Refresh access token
  * - GET /user-auth/me - Get current user profile
  */
@@ -61,6 +63,22 @@ export class UserAuthController {
     const result = await this.userAuthService.login(loginDto);
 
     this.logger.log(`Login successful for: ${loginDto.email}`, this.context);
+    return result;
+  }
+
+  /**
+   * POST /user-auth/google
+   * Sign in with Google OAuth
+   * Creates account if first time, or logs in existing user
+   */
+  @Post('google')
+  @HttpCode(HttpStatus.OK)
+  async googleLogin(@Body() googleAuthDto: GoogleAuthDto): Promise<AuthResponse> {
+    this.logger.log('Google login request received', this.context);
+
+    const result = await this.userAuthService.loginWithGoogle(googleAuthDto.idToken);
+
+    this.logger.log(`Google login successful for user: ${result.user.id}`, this.context);
     return result;
   }
 

@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:money_saver_deals/core/services/logging_service.dart';
 import 'package:money_saver_deals/features/auth/domain/entities/app_user.dart';
 
@@ -13,6 +14,7 @@ import 'package:money_saver_deals/features/auth/domain/entities/app_user.dart';
 class AuthService {
   final Dio dio;
   final FlutterSecureStorage _storage;
+  final GoogleSignIn _googleSignIn;
   static const String _logContext = 'AuthService';
 
   // Storage keys
@@ -23,7 +25,18 @@ class AuthService {
   AuthService({
     required this.dio,
     FlutterSecureStorage? storage,
-  }) : _storage = storage ?? const FlutterSecureStorage();
+    GoogleSignIn? googleSignIn,
+  })  : _storage = storage ?? const FlutterSecureStorage(),
+        _googleSignIn = googleSignIn ??
+            GoogleSignIn(
+              scopes: ['email', 'profile'],
+              // Web client ID - should be configured via environment
+              // This ID should match the one configured in Google Cloud Console
+              clientId: const String.fromEnvironment(
+                'GOOGLE_WEB_CLIENT_ID',
+                defaultValue: 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com',
+              ),
+            );
 
   /// Register a new user with email and password
   Future<AuthResponse> register({
@@ -70,6 +83,95 @@ class AuthService {
         context: _logContext,
       );
       rethrow;
+    }
+  }
+
+  /// Sign in with Google OAuth
+  /// Returns AuthResponse on success, throws exception on failure
+  Future<AuthResponse> signInWithGoogle() async {
+    logger.debug('Attempting Google Sign-In', context: _logContext);
+
+    try {
+      // Trigger the Google Sign-In flow
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+
+      if (googleUser == null) {
+        // User cancelled the sign-in
+        logger.debug('Google Sign-In cancelled by user', context: _logContext);
+        throw GoogleSignInCancelledException();
+      }
+
+      // Obtain the auth details from the request
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      final idToken = googleAuth.idToken;
+
+      if (idToken == null) {
+        logger.warning('No ID token received from Google', context: _logContext);
+        throw DioException(
+          requestOptions: RequestOptions(path: '/user-auth/google'),
+          message: 'Failed to get Google ID token',
+        );
+      }
+
+      logger.debug(
+        'Google Sign-In successful, sending token to backend',
+        context: _logContext,
+      );
+
+      // Send the ID token to our backend
+      final response = await dio.post(
+        '/user-auth/google',
+        data: {'idToken': idToken},
+      );
+
+      if (response.statusCode == 200) {
+        final authResponse = AuthResponse.fromJson(
+          response.data as Map<String, dynamic>,
+        );
+
+        // Store tokens
+        await _storeTokens(authResponse);
+
+        logger.info(
+          'Google Sign-In completed for: ${authResponse.user.email}',
+          context: _logContext,
+        );
+
+        return authResponse;
+      }
+
+      throw DioException(
+        requestOptions: response.requestOptions,
+        response: response,
+        message: 'Google sign-in failed with status: ${response.statusCode}',
+      );
+    } on DioException catch (e) {
+      logger.warning(
+        'Google Sign-In backend error: ${e.response?.data ?? e.message}',
+        context: _logContext,
+      );
+      rethrow;
+    } catch (e) {
+      if (e is GoogleSignInCancelledException) {
+        rethrow;
+      }
+      logger.warning(
+        'Google Sign-In error: $e',
+        context: _logContext,
+      );
+      rethrow;
+    }
+  }
+
+  /// Sign out from Google (call when logging out)
+  Future<void> signOutGoogle() async {
+    try {
+      await _googleSignIn.signOut();
+      logger.debug('Signed out from Google', context: _logContext);
+    } catch (e) {
+      logger.warning('Failed to sign out from Google: $e', context: _logContext);
     }
   }
 
@@ -208,6 +310,9 @@ class AuthService {
     await _storage.delete(key: _refreshTokenKey);
     await _storage.delete(key: _userIdKey);
 
+    // Also sign out from Google if signed in
+    await signOutGoogle();
+
     logger.info('User logged out successfully', context: _logContext);
   }
 
@@ -259,4 +364,13 @@ class AuthService {
         return 'Connection error. Please try again.';
     }
   }
+}
+
+/// Exception thrown when user cancels Google Sign-In
+class GoogleSignInCancelledException implements Exception {
+  final String message;
+  GoogleSignInCancelledException([this.message = 'Google Sign-In was cancelled']);
+
+  @override
+  String toString() => message;
 }

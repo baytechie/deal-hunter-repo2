@@ -295,20 +295,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 ),
               ),
 
-            // Sign in with Google (placeholder)
+            // Sign in with Google
             SizedBox(
               width: double.infinity,
               child: OutlinedButton(
-                onPressed: isLoading
-                    ? null
-                    : () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Google Sign-In coming soon'),
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
-                      },
+                onPressed: isLoading ? null : _handleGoogleSignIn,
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   side: const BorderSide(color: Colors.grey),
@@ -316,12 +307,18 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.account_circle, color: Colors.grey),
-                    SizedBox(width: 12),
-                    Text(
+                    Image.network(
+                      'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
+                      height: 24,
+                      width: 24,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Icon(Icons.account_circle, color: Colors.grey),
+                    ),
+                    const SizedBox(width: 12),
+                    const Text(
                       'Sign in with Google',
                       style: TextStyle(
                         color: Colors.black87,
@@ -555,6 +552,22 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         ),
       ),
     );
+  }
+
+  /// Handle Google Sign-In
+  Future<void> _handleGoogleSignIn() async {
+    final authNotifier = ref.read(authProvider.notifier);
+
+    final success = await authNotifier.signInWithGoogle();
+
+    if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Welcome! Signed in with Google successfully.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
   }
 
   /// Handle form submission (login or register)

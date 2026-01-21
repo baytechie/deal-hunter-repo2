@@ -3,7 +3,9 @@ import {
   UnauthorizedException,
   ConflictException,
   Inject,
+  BadRequestException,
 } from '@nestjs/common';
+import { OAuth2Client } from 'google-auth-library';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
@@ -31,13 +33,19 @@ export class UserAuthService {
   private readonly context = 'UserAuthService';
   private readonly SALT_ROUNDS = 10;
   private readonly REFRESH_TOKEN_EXPIRY_DAYS = 30;
+  private readonly googleClient: OAuth2Client;
 
   constructor(
     @Inject(USERS_REPOSITORY)
     private readonly usersRepository: IUsersRepository,
     private readonly jwtService: JwtService,
     private readonly logger: LoggerService,
-  ) {}
+  ) {
+    // Initialize Google OAuth client
+    // Client ID should be configured via environment variable
+    const googleClientId = process.env.GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID';
+    this.googleClient = new OAuth2Client(googleClientId);
+  }
 
   /**
    * Register a new user with email and password
@@ -71,6 +79,101 @@ export class UserAuthService {
 
     // Generate tokens and return
     return this.generateAuthResponse(user);
+  }
+
+  /**
+   * Login with Google OAuth
+   * Verifies the Google ID token, creates user if needed, and returns auth tokens
+   */
+  async loginWithGoogle(idToken: string): Promise<AuthResponse> {
+    this.logger.log('Google login attempt', this.context);
+
+    // Verify the Google ID token
+    let payload;
+    try {
+      const ticket = await this.googleClient.verifyIdToken({
+        idToken,
+        audience: process.env.GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID',
+      });
+      payload = ticket.getPayload();
+    } catch (error) {
+      this.logger.warn(`Google token verification failed: ${error.message}`, this.context);
+      throw new BadRequestException('Invalid Google ID token');
+    }
+
+    if (!payload) {
+      this.logger.warn('Google token payload is empty', this.context);
+      throw new BadRequestException('Invalid Google ID token');
+    }
+
+    const { sub: googleId, email, name, picture } = payload;
+
+    if (!googleId) {
+      throw new BadRequestException('Google ID not found in token');
+    }
+
+    // Check if user exists with this Google ID
+    let user = await this.usersRepository.findByGoogleId(googleId);
+
+    if (user) {
+      // Existing Google user - check if active
+      if (!user.isActive) {
+        this.logger.warn(`Google login failed - user inactive: ${email}`, this.context);
+        throw new UnauthorizedException('Account is deactivated');
+      }
+
+      // Update last login and avatar if changed
+      await this.usersRepository.update(user.id, {
+        lastLoginAt: new Date(),
+        avatarUrl: picture || user.avatarUrl,
+      });
+
+      this.logger.log(`Google login successful for existing user: ${user.id}`, this.context);
+      return this.generateAuthResponse(user);
+    }
+
+    // Check if email exists with password login
+    if (email) {
+      const existingEmailUser = await this.usersRepository.findByEmail(email);
+      if (existingEmailUser) {
+        // Link Google account to existing email user
+        await this.usersRepository.update(existingEmailUser.id, {
+          googleId,
+          avatarUrl: picture || existingEmailUser.avatarUrl,
+          emailVerified: true, // Google has verified the email
+          lastLoginAt: new Date(),
+        });
+
+        this.logger.log(
+          `Google account linked to existing user: ${existingEmailUser.id}`,
+          this.context,
+        );
+
+        // Fetch updated user
+        user = await this.usersRepository.findById(existingEmailUser.id);
+        return this.generateAuthResponse(user!);
+      }
+    }
+
+    // Create new user with Google account
+    user = await this.usersRepository.create({
+      email: email || null,
+      displayName: name || email?.split('@')[0] || 'User',
+    });
+
+    // Update with Google-specific fields
+    await this.usersRepository.update(user.id, {
+      googleId,
+      avatarUrl: picture || null,
+      emailVerified: !!email, // Google has verified the email
+      lastLoginAt: new Date(),
+    } as Partial<User>);
+
+    this.logger.log(`New user created via Google login: ${user.id}`, this.context);
+
+    // Fetch updated user to get all fields
+    user = await this.usersRepository.findById(user.id);
+    return this.generateAuthResponse(user!);
   }
 
   /**

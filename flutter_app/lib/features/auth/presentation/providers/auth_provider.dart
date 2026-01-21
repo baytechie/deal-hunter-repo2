@@ -127,6 +127,34 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  /// Sign in with Google OAuth
+  Future<bool> signInWithGoogle() async {
+    logger.debug('Google sign-in attempt', context: _logContext);
+    state = const AuthLoading();
+
+    try {
+      final authResponse = await authService.signInWithGoogle();
+
+      state = AuthAuthenticated(authResponse.user);
+      logger.info('Google sign-in successful for: ${authResponse.user.email}', context: _logContext);
+      return true;
+    } on GoogleSignInCancelledException {
+      // User cancelled - return to unauthenticated state without error
+      logger.debug('Google sign-in cancelled by user', context: _logContext);
+      state = const AuthUnauthenticated();
+      return false;
+    } on DioException catch (e) {
+      final errorMessage = AuthService.getErrorMessage(e);
+      logger.warning('Google sign-in failed: $errorMessage', context: _logContext);
+      state = AuthError(errorMessage);
+      return false;
+    } catch (e) {
+      logger.warning('Google sign-in error: $e', context: _logContext);
+      state = const AuthError('Google sign-in failed. Please try again.');
+      return false;
+    }
+  }
+
   /// Logout current user
   Future<void> logout() async {
     logger.debug('Logout requested', context: _logContext);
