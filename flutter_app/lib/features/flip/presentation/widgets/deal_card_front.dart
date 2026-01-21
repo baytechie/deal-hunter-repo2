@@ -441,9 +441,34 @@ class DealCardFront extends StatelessWidget {
                 ],
               ),
 
-              // Buy Now button
+              // Buy Now button - auto-copies coupon code before opening
               GestureDetector(
-                onTap: onBuyPressed,
+                onTap: () {
+                  // Auto-copy coupon code to clipboard if available
+                  final couponCode = deal.couponCode;
+                  if (couponCode != null && couponCode.isNotEmpty) {
+                    Clipboard.setData(ClipboardData(text: couponCode));
+                    HapticFeedback.mediumImpact();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Row(
+                          children: [
+                            const Icon(Icons.check_circle, color: Colors.white, size: 20),
+                            const SizedBox(width: 8),
+                            Expanded(child: Text('Coupon "$couponCode" copied! Opening deal...')),
+                          ],
+                        ),
+                        backgroundColor: const Color(0xFF4CAF50),
+                        duration: const Duration(seconds: 2),
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    );
+                  }
+                  onBuyPressed();
+                },
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(

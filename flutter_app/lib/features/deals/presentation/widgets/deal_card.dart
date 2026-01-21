@@ -26,138 +26,155 @@ class DealCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final discountPercentage = _calculateDiscount();
 
-    return GestureDetector(
-      onTap: () => _handleDealTap(context, ref),
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(AppRadius.xl),
-          boxShadow: AppShadows.cardShadow,
-          border: Border.all(
-            color: AppColors.border,
-            width: 1,
-          ),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(AppRadius.xl),
-          child: Column(
-            children: [
-              // Section A: Image (Flex 10 of 20 - more compact)
-              Flexible(
-                flex: 10,
-                child: Stack(
-                  children: [
-                    // Background image
-                    Container(
-                      width: double.infinity,
-                      decoration: const BoxDecoration(
-                        color: AppColors.surfaceVariant,
-                      ),
-                      child: deal.imageUrl.isNotEmpty
-                          ? _buildProductImage()
-                          : _buildPlaceholderImage(),
-                    ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Responsive sizing based on card height
+        final cardHeight = constraints.maxHeight;
+        final isCompact = cardHeight < 320;
+        final isVeryCompact = cardHeight < 280;
 
-                    // Discount Badge (Top Left)
-                    if (discountPercentage > 0)
-                      Positioned(
-                        top: 8,
-                        left: 8,
-                        child: _buildDiscountBadge(discountPercentage),
-                      ),
+        return GestureDetector(
+          onTap: () => _handleDealTap(context, ref),
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(AppRadius.xl),
+              boxShadow: AppShadows.cardShadow,
+              border: Border.all(
+                color: AppColors.border,
+                width: 1,
+              ),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(AppRadius.xl),
+              child: Column(
+                children: [
+                  // Section A: Image (45% of card height)
+                  Expanded(
+                    flex: 45,
+                    child: Stack(
+                      children: [
+                        // Background image
+                        Container(
+                          width: double.infinity,
+                          decoration: const BoxDecoration(
+                            color: AppColors.surfaceVariant,
+                          ),
+                          child: deal.imageUrl.isNotEmpty
+                              ? _buildProductImage()
+                              : _buildPlaceholderImage(),
+                        ),
 
-                    // HOT Badge (Below discount or top left if no discount)
-                    if (deal.isHot)
-                      Positioned(
-                        top: discountPercentage > 0 ? 38 : 8,
-                        left: 8,
-                        child: _buildHotBadge(),
-                      ),
+                        // Discount Badge (Top Left)
+                        if (discountPercentage > 0)
+                          Positioned(
+                            top: 6,
+                            left: 6,
+                            child: _buildDiscountBadge(discountPercentage, isCompact),
+                          ),
 
-                    // Retailer Badge (Bottom Left)
-                    Positioned(
-                      bottom: 8,
-                      left: 8,
-                      child: _buildRetailerBadge(),
-                    ),
+                        // HOT Badge (Below discount or top left if no discount)
+                        if (deal.isHot)
+                          Positioned(
+                            top: discountPercentage > 0 ? (isCompact ? 32 : 38) : 6,
+                            left: 6,
+                            child: _buildHotBadge(isCompact),
+                          ),
 
-                    // Verdict Badge (Bottom Right)
-                    if (deal.verdict != null && deal.verdict!.isNotEmpty)
-                      Positioned(
-                        bottom: 8,
-                        right: 8,
-                        child: _buildVerdictBadge(),
-                      ),
+                        // Retailer Badge (Bottom Left)
+                        Positioned(
+                          bottom: 6,
+                          left: 6,
+                          child: _buildRetailerBadge(isCompact),
+                        ),
 
-                    // Heart Icon (Top Right)
-                    Positioned(
-                      top: 4,
-                      right: 4,
-                      child: _buildSaveButton(ref),
-                    ),
+                        // Verdict Badge (Bottom Right)
+                        if (deal.verdict != null && deal.verdict!.isNotEmpty)
+                          Positioned(
+                            bottom: 6,
+                            right: 6,
+                            child: _buildVerdictBadge(isCompact),
+                          ),
 
-                    // Subtle gradient overlay at bottom for depth
-                    Positioned(
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      height: 40,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              Colors.black.withOpacity(0.03),
-                            ],
+                        // Heart Icon (Top Right)
+                        Positioned(
+                          top: 2,
+                          right: 2,
+                          child: _buildSaveButton(ref, isCompact),
+                        ),
+
+                        // Subtle gradient overlay at bottom for depth
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          height: 30,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.transparent,
+                                  Colors.black.withOpacity(0.03),
+                                ],
+                              ),
+                            ),
                           ),
                         ),
+                      ],
+                    ),
+                  ),
+
+                  // Section B: Content (55% of card height - needs more space)
+                  Expanded(
+                    flex: 55,
+                    child: Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isCompact ? AppSpacing.sm : AppSpacing.md,
+                        vertical: isCompact ? 6 : AppSpacing.sm,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Title - flexible to take available space
+                          Flexible(
+                            flex: 2,
+                            child: Text(
+                              deal.title,
+                              maxLines: isVeryCompact ? 1 : 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: isCompact
+                                  ? AppTypography.titleMedium.copyWith(fontSize: 13)
+                                  : AppTypography.titleMedium,
+                            ),
+                          ),
+
+                          SizedBox(height: isCompact ? 2 : 4),
+
+                          // Promo Code Section
+                          if (!isVeryCompact) _buildPromoCodeBanner(context, isCompact),
+
+                          if (!isVeryCompact) SizedBox(height: isCompact ? 2 : 4),
+
+                          // Price Section with savings
+                          _buildPriceSection(isCompact),
+
+                          SizedBox(height: isCompact ? 4 : 6),
+
+                          // View Deal Button with integrated actions
+                          _buildViewDealButtonWithActions(context, ref, isCompact),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-
-              // Section B: Content (Flex 10 of 20 - balanced)
-              Flexible(
-                flex: 10,
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Title (compact, no Expanded)
-                      Text(
-                        deal.title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTypography.titleMedium,
-                      ),
-
-                      // Promo Code Section (fills the middle space)
-                      _buildPromoCodeBanner(context),
-
-                      // Price Section with savings
-                      _buildPriceSection(),
-
-                      // View Deal Button (Primary CTA)
-                      _buildViewDealButton(context),
-
-                      const SizedBox(height: 8),
-
-                      // Action buttons row (Save + Share)
-                      _buildActionButtonsRow(ref),
-                    ],
                   ),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -309,9 +326,12 @@ class DealCard extends ConsumerWidget {
   }
 
   /// Build discount percentage badge with gradient
-  Widget _buildDiscountBadge(double percentage) {
+  Widget _buildDiscountBadge(double percentage, [bool isCompact = false]) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: EdgeInsets.symmetric(
+        horizontal: isCompact ? 6 : 8,
+        vertical: isCompact ? 3 : 4,
+      ),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [AppColors.error, AppColors.errorLight],
@@ -327,15 +347,20 @@ class DealCard extends ConsumerWidget {
       ),
       child: Text(
         '-${percentage.toStringAsFixed(0)}%',
-        style: AppTypography.discountBadge,
+        style: isCompact
+            ? AppTypography.discountBadge.copyWith(fontSize: 10)
+            : AppTypography.discountBadge,
       ),
     );
   }
 
   /// Build HOT badge with fire icon
-  Widget _buildHotBadge() {
+  Widget _buildHotBadge([bool isCompact = false]) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      padding: EdgeInsets.symmetric(
+        horizontal: isCompact ? 4 : 6,
+        vertical: isCompact ? 2 : 3,
+      ),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [AppColors.secondary, AppColors.secondaryLight],
@@ -349,20 +374,20 @@ class DealCard extends ConsumerWidget {
           ),
         ],
       ),
-      child: const Row(
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
             Icons.local_fire_department_rounded,
-            size: 12,
+            size: isCompact ? 10 : 12,
             color: Colors.white,
           ),
-          SizedBox(width: 2),
+          const SizedBox(width: 2),
           Text(
             'HOT',
             style: TextStyle(
               color: Colors.white,
-              fontSize: 10,
+              fontSize: isCompact ? 8 : 10,
               fontWeight: FontWeight.bold,
               letterSpacing: 0.5,
             ),
@@ -373,11 +398,14 @@ class DealCard extends ConsumerWidget {
   }
 
   /// Build retailer badge (Amazon, Walmart, etc.)
-  Widget _buildRetailerBadge() {
+  Widget _buildRetailerBadge([bool isCompact = false]) {
     final retailerColors = _getRetailerColors(deal.retailer);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: EdgeInsets.symmetric(
+        horizontal: isCompact ? 6 : 8,
+        vertical: isCompact ? 3 : 4,
+      ),
       decoration: BoxDecoration(
         color: retailerColors.$1,
         borderRadius: BorderRadius.circular(AppRadius.sm),
@@ -394,7 +422,7 @@ class DealCard extends ConsumerWidget {
         children: [
           Icon(
             _getRetailerIcon(deal.retailer),
-            size: 12,
+            size: isCompact ? 10 : 12,
             color: retailerColors.$2,
           ),
           const SizedBox(width: 4),
@@ -402,7 +430,7 @@ class DealCard extends ConsumerWidget {
             deal.retailer.toUpperCase(),
             style: TextStyle(
               color: retailerColors.$2,
-              fontSize: 10,
+              fontSize: isCompact ? 8 : 10,
               fontWeight: FontWeight.bold,
               letterSpacing: 0.3,
             ),
@@ -455,11 +483,14 @@ class DealCard extends ConsumerWidget {
   }
 
   /// Build verdict badge (BUY NOW, WAIT, PASS)
-  Widget _buildVerdictBadge() {
+  Widget _buildVerdictBadge([bool isCompact = false]) {
     final verdictData = _getVerdictData(deal.verdict ?? '');
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: EdgeInsets.symmetric(
+        horizontal: isCompact ? 6 : 8,
+        vertical: isCompact ? 3 : 4,
+      ),
       decoration: BoxDecoration(
         color: verdictData.$1,
         borderRadius: BorderRadius.circular(AppRadius.sm),
@@ -476,14 +507,14 @@ class DealCard extends ConsumerWidget {
         children: [
           Text(
             verdictData.$3,
-            style: const TextStyle(fontSize: 10),
+            style: TextStyle(fontSize: isCompact ? 8 : 10),
           ),
           const SizedBox(width: 3),
           Text(
             verdictData.$2,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white,
-              fontSize: 9,
+              fontSize: isCompact ? 7 : 9,
               fontWeight: FontWeight.bold,
               letterSpacing: 0.3,
             ),
@@ -509,11 +540,15 @@ class DealCard extends ConsumerWidget {
   }
 
   /// Build save/heart button
-  Widget _buildSaveButton(WidgetRef ref) {
+  Widget _buildSaveButton(WidgetRef ref, [bool isCompact = false]) {
     return Consumer(
       builder: (context, ref, _) {
         final savedDeals = ref.watch(savedDealsProvider);
         final isSaved = savedDeals.any((d) => d.id == deal.id);
+
+        final buttonSize = isCompact ? 36.0 : 44.0;
+        final iconSize = isCompact ? 14.0 : 18.0;
+        final padding = isCompact ? 6.0 : 8.0;
 
         return Semantics(
           label: isSaved
@@ -541,11 +576,11 @@ class DealCard extends ConsumerWidget {
               );
             },
             child: Container(
-              width: 44,
-              height: 44,
+              width: buttonSize,
+              height: buttonSize,
               alignment: Alignment.center,
               child: Container(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(padding),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   shape: BoxShape.circle,
@@ -559,7 +594,7 @@ class DealCard extends ConsumerWidget {
                 ),
                 child: Icon(
                   isSaved ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                  size: 18,
+                  size: iconSize,
                   color: isSaved ? AppColors.error : AppColors.textDisabled,
                 ),
               ),
@@ -571,7 +606,7 @@ class DealCard extends ConsumerWidget {
   }
 
   /// Build promo code banner for the middle section (only when promo exists)
-  Widget _buildPromoCodeBanner(BuildContext context) {
+  Widget _buildPromoCodeBanner(BuildContext context, [bool isCompact = false]) {
     final hasPromo = deal.couponCode != null || deal.promoDescription != null;
 
     if (!hasPromo) {
@@ -582,7 +617,10 @@ class DealCard extends ConsumerWidget {
     return GestureDetector(
       onTap: () => _copyPromoCode(context),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        padding: EdgeInsets.symmetric(
+          horizontal: isCompact ? 8 : 10,
+          vertical: isCompact ? 4 : 6,
+        ),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
@@ -596,17 +634,17 @@ class DealCard extends ConsumerWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
+            Icon(
               Icons.local_offer_rounded,
-              size: 14,
+              size: isCompact ? 12 : 14,
               color: AppColors.primary,
             ),
-            const SizedBox(width: 6),
+            SizedBox(width: isCompact ? 4 : 6),
             Flexible(
               child: Text(
                 deal.couponCode ?? deal.promoDescription ?? 'PROMO',
-                style: const TextStyle(
-                  fontSize: 12,
+                style: TextStyle(
+                  fontSize: isCompact ? 10 : 12,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'monospace',
                   color: AppColors.primaryDark,
@@ -616,16 +654,16 @@ class DealCard extends ConsumerWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            const SizedBox(width: 6),
+            SizedBox(width: isCompact ? 4 : 6),
             Container(
-              padding: const EdgeInsets.all(3),
+              padding: EdgeInsets.all(isCompact ? 2 : 3),
               decoration: BoxDecoration(
                 color: AppColors.primary.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(4),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.copy_rounded,
-                size: 12,
+                size: isCompact ? 10 : 12,
                 color: AppColors.primary,
               ),
             ),
@@ -636,12 +674,13 @@ class DealCard extends ConsumerWidget {
   }
 
   /// Build price section with current and original price (larger fonts)
-  Widget _buildPriceSection() {
+  Widget _buildPriceSection([bool isCompact = false]) {
     final savings = deal.originalPrice - deal.price;
     final discountPercentage = _calculateDiscount();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
         Row(
           crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -649,20 +688,20 @@ class DealCard extends ConsumerWidget {
           children: [
             Text(
               '\$${deal.price.toStringAsFixed(2)}',
-              style: const TextStyle(
-                fontSize: 22,
+              style: TextStyle(
+                fontSize: isCompact ? 18 : 22,
                 fontWeight: FontWeight.w800,
                 color: AppColors.primary,
                 letterSpacing: -0.5,
               ),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: isCompact ? 6 : 8),
             if (deal.originalPrice > deal.price)
               Flexible(
                 child: Text(
                   '\$${deal.originalPrice.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                    fontSize: 14,
+                  style: TextStyle(
+                    fontSize: isCompact ? 11 : 14,
                     fontWeight: FontWeight.w500,
                     color: AppColors.textDisabled,
                     decoration: TextDecoration.lineThrough,
@@ -677,21 +716,24 @@ class DealCard extends ConsumerWidget {
         // Savings row with percentage
         if (savings > 0)
           Padding(
-            padding: const EdgeInsets.only(top: 2),
+            padding: EdgeInsets.only(top: isCompact ? 1 : 2),
             child: Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.savings_outlined,
-                  size: 14,
+                  size: isCompact ? 12 : 14,
                   color: AppColors.primary,
                 ),
-                const SizedBox(width: 4),
-                Text(
-                  'Save \$${savings.toStringAsFixed(2)} (${discountPercentage.toStringAsFixed(0)}% off)',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.primary,
+                SizedBox(width: isCompact ? 3 : 4),
+                Flexible(
+                  child: Text(
+                    'Save \$${savings.toStringAsFixed(2)} (${discountPercentage.toStringAsFixed(0)}% off)',
+                    style: TextStyle(
+                      fontSize: isCompact ? 10 : 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primary,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
@@ -745,22 +787,141 @@ class DealCard extends ConsumerWidget {
     );
   }
 
+  /// Build View Deal button with integrated action buttons (compact version)
+  Widget _buildViewDealButtonWithActions(BuildContext context, WidgetRef ref, [bool isCompact = false]) {
+    return Row(
+      children: [
+        // View Deal Button (takes most space)
+        Expanded(
+          child: GestureDetector(
+            onTap: () => _openDealLink(context),
+            child: Container(
+              padding: EdgeInsets.symmetric(vertical: isCompact ? 8 : 10),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppColors.primary, AppColors.primaryLight],
+                ),
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.open_in_new_rounded,
+                    size: isCompact ? 14 : 16,
+                    color: Colors.white,
+                  ),
+                  SizedBox(width: isCompact ? 4 : 6),
+                  Text(
+                    'View Deal',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: isCompact ? 12 : 14,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        SizedBox(width: isCompact ? 6 : 8),
+        // Save button
+        Consumer(
+          builder: (context, ref, _) {
+            final savedDeals = ref.watch(savedDealsProvider);
+            final isSaved = savedDeals.any((d) => d.id == deal.id);
+
+            return GestureDetector(
+              onTap: () {
+                HapticFeedback.lightImpact();
+                ref.read(savedDealsProvider.notifier).toggleSave(deal);
+              },
+              child: Container(
+                width: isCompact ? 34 : 40,
+                height: isCompact ? 34 : 40,
+                decoration: BoxDecoration(
+                  color: isSaved ? AppColors.errorSurface : AppColors.surface,
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  border: Border.all(
+                    color: isSaved ? AppColors.error : AppColors.border,
+                    width: 1.5,
+                  ),
+                ),
+                child: Icon(
+                  isSaved ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                  size: isCompact ? 16 : 18,
+                  color: isSaved ? AppColors.error : AppColors.textMuted,
+                ),
+              ),
+            );
+          },
+        ),
+        SizedBox(width: isCompact ? 4 : 6),
+        // Share button
+        GestureDetector(
+          onTap: () {
+            HapticFeedback.lightImpact();
+            // Use the ShareButton logic
+          },
+          child: ShareButton(deal: deal, size: ShareButtonSize.small, isCompact: isCompact),
+        ),
+      ],
+    );
+  }
+
   /// Open deal affiliate link in browser
+  /// Automatically copies coupon code to clipboard before opening the link
   Future<void> _openDealLink(BuildContext context) async {
     HapticFeedback.mediumImpact();
 
+    // Auto-copy coupon code to clipboard if available
+    final couponCode = deal.couponCode ?? deal.promoDescription;
+    if (couponCode != null && couponCode.isNotEmpty) {
+      await Clipboard.setData(ClipboardData(text: couponCode));
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white, size: 20),
+                const SizedBox(width: 8),
+                Expanded(child: Text('Coupon "$couponCode" copied! Opening deal...')),
+              ],
+            ),
+            duration: const Duration(seconds: 2),
+            backgroundColor: const Color(0xFF4CAF50),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.md),
+            ),
+          ),
+        );
+      }
+    }
+
     final url = deal.affiliateLink;
     if (url.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Deal link not available'),
-          backgroundColor: AppColors.error,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.md),
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Deal link not available'),
+            backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.md),
+            ),
           ),
-        ),
-      );
+        );
+      }
       return;
     }
 

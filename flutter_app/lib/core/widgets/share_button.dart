@@ -17,11 +17,15 @@ class ShareButton extends StatefulWidget {
   /// Size variant for different contexts
   final ShareButtonSize size;
 
+  /// Whether to use compact dimensions (for small cards)
+  final bool isCompact;
+
   const ShareButton({
     super.key,
     required this.deal,
     this.onShareComplete,
     this.size = ShareButtonSize.small,
+    this.isCompact = false,
   });
 
   @override
@@ -83,6 +87,11 @@ class _ShareButtonState extends State<ShareButton> with SingleTickerProviderStat
   Widget build(BuildContext context) {
     final dimensions = widget.size.dimensions;
 
+    // Apply compact scaling if needed
+    final touchTarget = widget.isCompact ? dimensions.touchTarget * 0.77 : dimensions.touchTarget;
+    final visual = widget.isCompact ? dimensions.visual * 0.77 : dimensions.visual;
+    final iconSize = widget.isCompact ? dimensions.iconSize * 0.77 : dimensions.iconSize;
+
     return Semantics(
       label: 'Share ${widget.deal.title}',
       button: true,
@@ -92,16 +101,16 @@ class _ShareButtonState extends State<ShareButton> with SingleTickerProviderStat
         onTapCancel: _handleTapCancel,
         onTap: _openShareSheet,
         child: Container(
-          width: dimensions.touchTarget,
-          height: dimensions.touchTarget,
+          width: touchTarget,
+          height: touchTarget,
           alignment: Alignment.center,
           child: AnimatedBuilder(
             animation: _scaleAnimation,
             builder: (context, child) => Transform.scale(
               scale: _scaleAnimation.value,
               child: Container(
-                width: dimensions.visual,
-                height: dimensions.visual,
+                width: visual,
+                height: visual,
                 decoration: BoxDecoration(
                   color: _isPressed ? AppColors.primarySurface : AppColors.surface,
                   shape: BoxShape.circle,
@@ -109,7 +118,7 @@ class _ShareButtonState extends State<ShareButton> with SingleTickerProviderStat
                 ),
                 child: Icon(
                   Icons.share_rounded,
-                  size: dimensions.iconSize,
+                  size: iconSize,
                   color: _isPressed ? AppColors.primary : AppColors.textMuted,
                 ),
               ),

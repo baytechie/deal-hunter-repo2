@@ -428,35 +428,79 @@ class _HomeFeedPageState extends ConsumerState<HomeFeedPage> {
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 600),
-        child: CustomScrollView(
-          controller: _scrollController,
-          slivers: [
-            // Deals Grid with improved spacing
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-              sliver: SliverGrid(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 0.68, // Taller cards for more content
-                  mainAxisSpacing: 14,    // Increased from 6
-                  crossAxisSpacing: 12,   // Increased from 6
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // Calculate responsive grid parameters based on screen width
+            final screenWidth = MediaQuery.of(context).size.width;
+
+            // Determine cross axis count based on screen width
+            int crossAxisCount;
+            double childAspectRatio;
+            double crossAxisSpacing;
+            double mainAxisSpacing;
+
+            if (screenWidth < 360) {
+              // Very small phones - single column
+              crossAxisCount = 1;
+              childAspectRatio = 0.85;
+              crossAxisSpacing = 0;
+              mainAxisSpacing = 12;
+            } else if (screenWidth < 400) {
+              // Small phones - 2 columns with taller cards
+              crossAxisCount = 2;
+              childAspectRatio = 0.52; // Much taller for content
+              crossAxisSpacing = 10;
+              mainAxisSpacing = 12;
+            } else if (screenWidth < 500) {
+              // Medium phones - 2 columns
+              crossAxisCount = 2;
+              childAspectRatio = 0.56;
+              crossAxisSpacing = 12;
+              mainAxisSpacing = 14;
+            } else {
+              // Large phones and tablets - 2 columns with optimal ratio
+              crossAxisCount = 2;
+              childAspectRatio = 0.62;
+              crossAxisSpacing = 14;
+              mainAxisSpacing = 16;
+            }
+
+            return CustomScrollView(
+              controller: _scrollController,
+              slivers: [
+                // Deals Grid with responsive spacing
+                SliverPadding(
+                  padding: EdgeInsets.fromLTRB(
+                    screenWidth < 360 ? 16 : 12,
+                    8,
+                    screenWidth < 360 ? 16 : 12,
+                    12,
+                  ),
+                  sliver: SliverGrid(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossAxisCount,
+                      childAspectRatio: childAspectRatio,
+                      mainAxisSpacing: mainAxisSpacing,
+                      crossAxisSpacing: crossAxisSpacing,
+                    ),
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        if (index < deals.length) {
+                          return DealCard(deal: deals[index]);
+                        }
+                        return null;
+                      },
+                      childCount: deals.length,
+                    ),
+                  ),
                 ),
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    if (index < deals.length) {
-                      return DealCard(deal: deals[index]);
-                    }
-                    return null;
-                  },
-                  childCount: deals.length,
+                // Footer for loading indicator or error
+                SliverToBoxAdapter(
+                  child: _buildFooter(dealsState),
                 ),
-              ),
-            ),
-            // Footer for loading indicator or error
-            SliverToBoxAdapter(
-              child: _buildFooter(dealsState),
-            ),
-          ],
+              ],
+            );
+          },
         ),
       ),
     );
