@@ -1,6 +1,29 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <!-- Google Analytics 4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-M7MNFG4WYC"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-M7MNFG4WYC');
+
+    // Custom event tracking function for Flutter
+    window.trackEvent = function(eventName, params) {
+      gtag('event', eventName, params || {});
+    };
+
+    // Track page views for Flutter navigation
+    window.trackPageView = function(pageName) {
+      gtag('event', 'page_view', {
+        page_title: pageName,
+        page_location: window.location.href,
+        page_path: '/' + pageName
+      });
+    };
+  </script>
+
   <!--
     If you are serving your web app in a path other than the root, change the
     href value below to reflect the base path you are serving from.

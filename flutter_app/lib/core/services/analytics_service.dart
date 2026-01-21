@@ -1,9 +1,10 @@
+import 'dart:js_interop';
 import 'package:flutter/foundation.dart';
 
 /// Analytics event model for tracking user interactions
-/// 
+///
 /// Why: Provides a structured way to log events to analytics services
-/// (Firebase Analytics, Mixpanel, etc.) with consistent data.
+/// (Google Analytics 4) with consistent data.
 class AnalyticsEvent {
   /// Event name (e.g., 'deal_link_launched', 'webview_opened')
   final String name;
@@ -27,18 +28,21 @@ class AnalyticsEvent {
   }
 }
 
-/// Analytics Service for tracking user events
-/// 
+/// Analytics Service for Google Analytics 4 tracking
+///
 /// SOLID Principles:
 /// - Single Responsibility: Only handles event logging
 /// - Dependency Inversion: Can be replaced with different analytics provider
-/// 
-/// Why: Centralizes all analytics tracking. Makes it easy to:
-/// - Switch analytics providers without changing other code
-/// - Add custom tracking logic
-/// - Filter/monitor analytics in development
-/// - Maintain audit trail of user interactions
+///
+/// Tracks:
+/// - Page views (screen navigation)
+/// - Custom events (deal clicks, saves, shares)
+/// - E-commerce events (view item, purchase clicks)
 class AnalyticsService {
+  static final AnalyticsService _instance = AnalyticsService._internal();
+  factory AnalyticsService() => _instance;
+  AnalyticsService._internal();
+
   /// List to store events (for development/testing)
   final List<AnalyticsEvent> _events = [];
 
@@ -60,14 +64,21 @@ class AnalyticsService {
     debugPrint('[AnalyticsService] Analytics disabled');
   }
 
-  /// Log an analytics event
-  /// 
+  /// Track a page/screen view
+  void trackPageView(String pageName) {
+    if (!_isEnabled) return;
+
+    if (kIsWeb) {
+      _callTrackPageView(pageName);
+    }
+    debugPrint('[Analytics] Page view: $pageName');
+  }
+
+  /// Log an analytics event (sends to GA4)
+  ///
   /// Parameters:
   /// - [name]: Event name (e.g., 'deal_link_launched')
   /// - [parameters]: Optional key-value pairs for event context
-  /// 
-  /// Why: This method provides a clean interface for logging events.
-  /// It can be extended to send data to external analytics services.
   Future<void> logEvent({
     required String name,
     Map<String, dynamic>? parameters,
@@ -88,23 +99,138 @@ class AnalyticsService {
     // Store event locally (for debugging/testing)
     _events.add(event);
 
-    // TODO: Send to external analytics service (Firebase, Mixpanel, etc.)
-    // Example:
-    // await _firebaseAnalytics.logEvent(
-    //   name: name,
-    //   parameters: parameters,
-    // );
+    // Send to Google Analytics 4
+    if (kIsWeb) {
+      _callTrackEvent(name, parameters ?? {});
+    }
+  }
+
+  /// Track when user views a deal (flips card or taps)
+  Future<void> trackViewDeal({
+    required String dealId,
+    required String dealTitle,
+    required String retailer,
+    required double price,
+    String? category,
+  }) async {
+    await logEvent(
+      name: 'view_deal',
+      parameters: {
+        'deal_id': dealId,
+        'deal_title': dealTitle,
+        'retailer': retailer,
+        'price': price,
+        'category': category ?? 'unknown',
+      },
+    );
+  }
+
+  /// Track when user clicks Buy/View Deal button
+  Future<void> trackBuyClick({
+    required String dealId,
+    required String dealTitle,
+    required String retailer,
+    required double price,
+    String? couponCode,
+  }) async {
+    await logEvent(
+      name: 'buy_click',
+      parameters: {
+        'deal_id': dealId,
+        'deal_title': dealTitle,
+        'retailer': retailer,
+        'price': price,
+        'coupon_code': couponCode ?? '',
+      },
+    );
+  }
+
+  /// Track when user saves a deal
+  Future<void> trackSaveDeal({
+    required String dealId,
+    required String dealTitle,
+    required bool isSaved,
+  }) async {
+    await logEvent(
+      name: isSaved ? 'save_deal' : 'unsave_deal',
+      parameters: {
+        'deal_id': dealId,
+        'deal_title': dealTitle,
+      },
+    );
+  }
+
+  /// Track when user shares a deal
+  Future<void> trackShareDeal({
+    required String dealId,
+    required String dealTitle,
+    required String shareMethod,
+  }) async {
+    await logEvent(
+      name: 'share_deal',
+      parameters: {
+        'deal_id': dealId,
+        'deal_title': dealTitle,
+        'share_method': shareMethod,
+      },
+    );
+  }
+
+  /// Track when user copies a coupon code
+  Future<void> trackCopyCoupon({
+    required String dealId,
+    required String couponCode,
+  }) async {
+    await logEvent(
+      name: 'copy_coupon',
+      parameters: {
+        'deal_id': dealId,
+        'coupon_code': couponCode,
+      },
+    );
+  }
+
+  /// Track search queries
+  Future<void> trackSearch(String query) async {
+    await logEvent(
+      name: 'search',
+      parameters: {
+        'search_term': query,
+      },
+    );
+  }
+
+  /// Track category filter
+  Future<void> trackCategoryFilter(String category) async {
+    await logEvent(
+      name: 'filter_category',
+      parameters: {
+        'category': category,
+      },
+    );
+  }
+
+  /// Track user sign in
+  Future<void> trackSignIn(String method) async {
+    await logEvent(
+      name: 'login',
+      parameters: {
+        'method': method,
+      },
+    );
+  }
+
+  /// Track user sign up
+  Future<void> trackSignUp(String method) async {
+    await logEvent(
+      name: 'sign_up',
+      parameters: {
+        'method': method,
+      },
+    );
   }
 
   /// Log deal link launch event
-  /// 
-  /// Parameters:
-  /// - [dealId]: The deal that was launched
-  /// - [dealTitle]: The deal title
-  /// - [url]: The URL being launched
-  /// - [launchMethod]: How it was opened ('amazon_app', 'webview', 'browser')
-  /// 
-  /// Why: Provides a standardized way to track deal engagement
   Future<void> logDealLaunchEvent({
     required String dealId,
     required String dealTitle,
@@ -118,16 +244,11 @@ class AnalyticsService {
         'deal_title': dealTitle,
         'url': url,
         'launch_method': launchMethod,
-        'timestamp': DateTime.now().toIso8601String(),
       },
     );
   }
 
   /// Log WebView opened event
-  /// 
-  /// Parameters:
-  /// - [url]: The URL opened in WebView
-  /// - [reason]: Why WebView was used (e.g., 'amazon_app_not_installed')
   Future<void> logWebViewOpenedEvent({
     required String url,
     required String reason,
@@ -137,17 +258,11 @@ class AnalyticsService {
       parameters: {
         'url': url,
         'reason': reason,
-        'timestamp': DateTime.now().toIso8601String(),
       },
     );
   }
 
   /// Log URL launch error
-  /// 
-  /// Parameters:
-  /// - [dealId]: Deal ID that failed
-  /// - [url]: The URL that failed to launch
-  /// - [error]: Error message
   Future<void> logLaunchErrorEvent({
     required String dealId,
     required String url,
@@ -159,7 +274,6 @@ class AnalyticsService {
         'deal_id': dealId,
         'url': url,
         'error': error,
-        'timestamp': DateTime.now().toIso8601String(),
       },
     );
   }
@@ -169,4 +283,31 @@ class AnalyticsService {
     debugPrint('[AnalyticsService] Clearing ${_events.length} events');
     _events.clear();
   }
+
+  // JavaScript interop for web (GA4)
+  void _callTrackEvent(String eventName, Map<String, dynamic> params) {
+    try {
+      final jsParams = params.jsify();
+      if (jsParams != null) {
+        _trackEventJS(eventName.toJS, jsParams);
+      }
+    } catch (e) {
+      debugPrint('[Analytics] Error tracking event: $e');
+    }
+  }
+
+  void _callTrackPageView(String pageName) {
+    try {
+      _trackPageViewJS(pageName.toJS);
+    } catch (e) {
+      debugPrint('[Analytics] Error tracking page view: $e');
+    }
+  }
 }
+
+// JavaScript interop functions to call GA4
+@JS('trackEvent')
+external void _trackEventJS(JSString eventName, JSAny? params);
+
+@JS('trackPageView')
+external void _trackPageViewJS(JSString pageName);

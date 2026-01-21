@@ -14,7 +14,7 @@ import routerProvider, {
   UnsavedChangesNotifier,
 } from "@refinedev/react-router";
 import { App as AntdApp } from "antd";
-import { PlusCircleOutlined, ShareAltOutlined } from "@ant-design/icons";
+import { PlusCircleOutlined, ShareAltOutlined, LineChartOutlined } from "@ant-design/icons";
 import { HashRouter, Outlet, Route, Routes } from "react-router-dom";
 import { ColorModeContextProvider } from "./contexts/color-mode";
 import { DealList } from "./pages/deals/list";
@@ -22,6 +22,7 @@ import { PendingDealList } from "./pages/pending-deals/list";
 import { TroubleshootingPage } from "./pages/troubleshooting";
 import { ManualDealCreate } from "./pages/manual-deal/create";
 import { SocialMediaPage } from "./pages/social-media";
+import { AnalyticsPage } from "./pages/analytics";
 import { CustomTitle } from "./components/CustomTitle";
 import { Login } from "./pages/login";
 import { authProvider } from "./providers/auth";
@@ -70,6 +71,14 @@ function App() {
                       icon: <ShareAltOutlined />
                     }
                   },
+                  {
+                    name: "analytics",
+                    list: "/analytics",
+                    meta: {
+                      label: "Analytics",
+                      icon: <LineChartOutlined />
+                    }
+                  },
                 ]}
                 options={{
                   syncWithLocation: true,
@@ -104,6 +113,9 @@ function App() {
                     <Route path="manual-deal/create" element={<ManualDealCreate />} />
                     <Route path="social-media">
                       <Route index element={<SocialMediaPage />} />
+                    </Route>
+                    <Route path="analytics">
+                      <Route index element={<AnalyticsPage />} />
                     </Route>
                   </Route>
 

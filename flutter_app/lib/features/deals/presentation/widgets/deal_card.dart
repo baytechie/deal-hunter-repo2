@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:money_saver_deals/core/theme/app_theme.dart';
+import 'package:money_saver_deals/core/services/analytics_service.dart';
 import 'package:money_saver_deals/core/widgets/share_bottom_sheet.dart';
 import 'package:money_saver_deals/features/deals/domain/entities/deal.dart';
 import 'package:money_saver_deals/features/saved/presentation/providers/saved_deals_provider.dart';
@@ -857,6 +858,15 @@ class DealCard extends ConsumerWidget {
   /// Automatically copies coupon code to clipboard before opening the link
   Future<void> _openDealLink(BuildContext context) async {
     HapticFeedback.mediumImpact();
+
+    // Track buy click in Google Analytics
+    AnalyticsService().trackBuyClick(
+      dealId: deal.id,
+      dealTitle: deal.title,
+      retailer: deal.retailer,
+      price: deal.price,
+      couponCode: deal.couponCode,
+    );
 
     // Auto-copy coupon code to clipboard if available
     final couponCode = deal.couponCode ?? deal.promoDescription;
