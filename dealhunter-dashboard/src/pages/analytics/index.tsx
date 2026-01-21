@@ -173,34 +173,73 @@ export const AnalyticsPage: React.FC = () => {
 
       <Divider />
 
-      {/* Embedded GA4 Report */}
-      <Title level={4}>Embedded Report</Title>
+      {/* GA4 Configuration Info */}
+      <Title level={4}>Configuration Details</Title>
       <Card>
+        <Row gutter={[24, 16]}>
+          <Col xs={24} md={8}>
+            <Card size="small" style={{ background: "#f6ffed", borderColor: "#b7eb8f" }}>
+              <Text type="secondary">Measurement ID</Text>
+              <Title level={4} style={{ margin: "8px 0 0 0", color: "#52c41a" }}>
+                {GA4_MEASUREMENT_ID}
+              </Title>
+            </Card>
+          </Col>
+          <Col xs={24} md={8}>
+            <Card size="small" style={{ background: "#e6f7ff", borderColor: "#91d5ff" }}>
+              <Text type="secondary">Tracked App</Text>
+              <Title level={4} style={{ margin: "8px 0 0 0", color: "#1890ff" }}>
+                DealHunter PWA
+              </Title>
+            </Card>
+          </Col>
+          <Col xs={24} md={8}>
+            <Card size="small" style={{ background: "#fff7e6", borderColor: "#ffd591" }}>
+              <Text type="secondary">Status</Text>
+              <Title level={4} style={{ margin: "8px 0 0 0", color: "#fa8c16" }}>
+                Active
+              </Title>
+            </Card>
+          </Col>
+        </Row>
+
+        <Divider style={{ margin: "16px 0" }} />
+
         <Alert
-          message="Note"
-          description="The embedded report below requires you to be signed in to Google Analytics in the same browser. If you see a blank frame, click 'Open Google Analytics' above to sign in first."
+          message="How to View Analytics"
+          description={
+            <div>
+              <Paragraph style={{ margin: "8px 0" }}>
+                Google Analytics reports cannot be embedded due to security restrictions.
+                Use the quick access cards above or click the button below to open GA4 directly.
+              </Paragraph>
+              <Paragraph style={{ margin: "8px 0" }}>
+                <strong>Tip:</strong> For real-time data, click the "Real-Time" card to see active users
+                and events as they happen on your app.
+              </Paragraph>
+            </div>
+          }
           type="info"
           showIcon
-          style={{ marginBottom: "16px" }}
         />
-        <div
-          style={{
-            width: "100%",
-            height: "600px",
-            border: "1px solid #d9d9d9",
-            borderRadius: "8px",
-            overflow: "hidden",
-          }}
-        >
-          <iframe
-            src={`https://analytics.google.com/analytics/web/#/p${GA4_PROPERTY_ID}/reports/reportinghub`}
-            style={{
-              width: "100%",
-              height: "100%",
-              border: "none",
-            }}
-            title="Google Analytics Dashboard"
-          />
+
+        <div style={{ marginTop: "16px", textAlign: "center" }}>
+          <Button
+            type="primary"
+            size="large"
+            icon={<ExportOutlined />}
+            onClick={() => openGA4Report(ga4Links.home)}
+            style={{ marginRight: "12px" }}
+          >
+            Open Google Analytics
+          </Button>
+          <Button
+            size="large"
+            icon={<UserOutlined />}
+            onClick={() => openGA4Report(ga4Links.realtime)}
+          >
+            View Real-Time Data
+          </Button>
         </div>
       </Card>
     </div>
