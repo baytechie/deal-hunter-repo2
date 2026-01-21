@@ -24,7 +24,7 @@ class AppFooter extends StatelessWidget {
     final uri = Uri(
       scheme: 'mailto',
       path: 'hunter4dealsapp@gmail.com',
-      query: 'subject=Hunt Deals App Inquiry',
+      query: 'subject=Deal Hunt App Inquiry',
     );
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
@@ -140,7 +140,7 @@ class AppFooter extends StatelessWidget {
 
           // Copyright
           Text(
-            '© ${DateTime.now().year} Hunt Deals. All rights reserved.',
+            '© ${DateTime.now().year} Deal Hunt. All rights reserved.',
             style: TextStyle(
               color: Colors.grey[500],
               fontSize: 11,
@@ -222,7 +222,7 @@ class _LegalLink extends StatelessWidget {
 
 // Legal text content
 const String _privacyPolicyText = '''
-Privacy Policy for Hunt Deals
+Privacy Policy for Deal Hunt
 
 Last updated: January 2026
 
@@ -250,12 +250,12 @@ For privacy inquiries: hunter4dealsapp@gmail.com
 ''';
 
 const String _termsOfServiceText = '''
-Terms of Service for Hunt Deals
+Terms of Service for Deal Hunt
 
 Last updated: January 2026
 
 1. Acceptance of Terms
-By using Hunt Deals, you agree to these terms.
+By using Deal Hunt, you agree to these terms.
 
 2. Use of Service
 - You must be 13 years or older to use this app
@@ -268,10 +268,10 @@ By using Hunt Deals, you agree to these terms.
 - Always verify deals with the retailer before purchasing
 
 4. Intellectual Property
-All content and features are owned by Hunt Deals.
+All content and features are owned by Deal Hunt.
 
 5. Limitation of Liability
-Hunt Deals is not responsible for:
+Deal Hunt is not responsible for:
 - Third-party retailer policies or actions
 - Price changes or deal expirations
 - Any losses from using deal information
@@ -286,7 +286,7 @@ Questions: hunter4dealsapp@gmail.com
 const String _affiliateDisclosureText = '''
 Affiliate Disclosure
 
-Hunt Deals participates in affiliate marketing programs, which means we may earn commissions on purchases made through links in our app.
+Deal Hunt participates in affiliate marketing programs, which means we may earn commissions on purchases made through links in our app.
 
 Our Affiliate Partners Include:
 • Amazon Associates Program

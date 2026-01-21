@@ -1,5 +1,5 @@
 name: money_saver_deals
-description: "Money Saver Deals - Flutter app for finding amazing deals using Clean Architecture and Riverpod."
+description: "Deal Hunt - Find the best deals, save big! Flutter app using Clean Architecture and Riverpod."
 publish_to: 'none'
 
 version: 1.0.0+1

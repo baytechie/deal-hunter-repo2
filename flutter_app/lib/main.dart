@@ -111,7 +111,7 @@ class MoneySaverDealsApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Hunt \$Deals',
+      title: 'Deal Hunt',
       debugShowCheckedModeBanner: false,
       theme: buildAppTheme(),
       home: const AppShell(),

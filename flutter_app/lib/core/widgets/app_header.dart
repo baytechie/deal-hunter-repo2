@@ -100,7 +100,7 @@ class AppHeader extends ConsumerWidget {
                         colors: [AppColors.primary, AppColors.primaryLight],
                       ).createShader(bounds),
                       child: const Text(
-                        'Hunt Deals',
+                        'Deal Hunt',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -108,16 +108,15 @@ class AppHeader extends ConsumerWidget {
                         ),
                       ),
                     ),
-                    // Show page title if provided
-                    if (pageTitle != null)
-                      Text(
-                        pageTitle!,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textMuted,
-                          fontWeight: FontWeight.w500,
-                        ),
+                    // Show page title if provided, otherwise show tagline
+                    Text(
+                      pageTitle ?? 'Find the best deals, save big!',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: AppColors.textMuted,
+                        fontWeight: FontWeight.w500,
                       ),
+                    ),
                   ],
                 ),
               ],

@@ -1,11 +1,11 @@
 {
-    "name": "flutter_app",
-    "short_name": "flutter_app",
+    "name": "Deal Hunt",
+    "short_name": "Deal Hunt",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Deal Hunt - Find the best deals, save big! Discover amazing discounts and savings.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

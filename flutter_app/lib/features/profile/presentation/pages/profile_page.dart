@@ -219,17 +219,45 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 ),
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 16),
+
+            // App Title
+            ShaderMask(
+              shaderCallback: (bounds) => const LinearGradient(
+                colors: [AppColors.primary, AppColors.primaryLight],
+              ).createShader(bounds),
+              child: const Text(
+                'Deal Hunt',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+
+            // Tagline
+            Text(
+              'Find the best deals, save big!',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 24),
 
             // Title
             Text(
               _isSignUpMode
-                  ? 'Create an Account to\nVote and Save Deals.'
-                  : 'Join the Community to\nVote and Save Deals.',
+                  ? 'Create an Account to\nVote and Save Deals'
+                  : 'Join the Community to\nVote and Save Deals',
               textAlign: TextAlign.center,
               style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 32),
