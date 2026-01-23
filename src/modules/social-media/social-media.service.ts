@@ -7,6 +7,8 @@ import {
   SOCIAL_POST_REPOSITORY,
 } from './repositories/social-post.repository.interface';
 import { TwitterService } from './twitter/twitter.service';
+import { FacebookService } from './facebook/facebook.service';
+import { FacebookTargetType } from './facebook/dto';
 import { LoggerService } from '../../shared/services/logger.service';
 import { Deal } from '../deals/entities/deal.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -20,6 +22,7 @@ export class SocialMediaService implements OnModuleInit {
     @Inject(SOCIAL_POST_REPOSITORY)
     private readonly socialPostRepository: ISocialPostRepository,
     private readonly twitterService: TwitterService,
+    private readonly facebookService: FacebookService,
     private readonly logger: LoggerService,
     @InjectRepository(Deal)
     private readonly dealRepository: Repository<Deal>,
@@ -212,7 +215,30 @@ export class SocialMediaService implements OnModuleInit {
 
     for (const post of duePosts) {
       try {
-        const result = await this.twitterService.postTweet(post.postContent, post.imageUrl);
+        let result: { success: boolean; postId?: string; postUrl?: string; error?: string };
+
+        if (post.platform === SocialPlatform.TWITTER) {
+          result = await this.twitterService.postTweet(post.postContent, post.imageUrl);
+        } else if (post.platform === SocialPlatform.FACEBOOK) {
+          // Parse Facebook post data from JSON content
+          const fbData = JSON.parse(post.postContent);
+          if (fbData.targetType === FacebookTargetType.PAGE) {
+            result = await this.facebookService.postToPage(
+              fbData.targetId,
+              fbData.pageAccessToken,
+              fbData.content,
+              post.imageUrl,
+            );
+          } else {
+            result = await this.facebookService.postToGroup(
+              fbData.targetId,
+              fbData.content,
+              post.imageUrl,
+            );
+          }
+        } else {
+          result = { success: false, error: `Unsupported platform: ${post.platform}` };
+        }
 
         if (result.success) {
           await this.socialPostRepository.update(post.id, {
@@ -221,13 +247,13 @@ export class SocialMediaService implements OnModuleInit {
             postUrl: result.postUrl,
             postedAt: new Date(),
           });
-          this.logger.log(`Scheduled tweet posted: ${result.postId}`, this.context);
+          this.logger.log(`Scheduled post published: ${result.postId}`, this.context);
         } else {
           await this.socialPostRepository.update(post.id, {
             status: PostStatus.FAILED,
             errorMessage: result.error,
           });
-          this.logger.error(`Scheduled tweet failed: ${result.error}`, this.context);
+          this.logger.error(`Scheduled post failed: ${result.error}`, this.context);
         }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -340,5 +366,218 @@ export class SocialMediaService implements OnModuleInit {
       username: result.username,
       error: result.error,
     };
+  }
+
+  // ==================== Facebook Methods ====================
+
+  /**
+   * Check Facebook connection status
+   */
+  async getFacebookStatus(): Promise<{ connected: boolean; configured: boolean; name?: string; error?: string }> {
+    const configured = this.facebookService.isConfigured();
+    if (!configured) {
+      return { connected: false, configured: false, error: 'Facebook App not configured' };
+    }
+
+    const result = await this.facebookService.verifyCredentials();
+    return {
+      connected: result.success,
+      configured: true,
+      name: result.name,
+      error: result.error,
+    };
+  }
+
+  /**
+   * Get Facebook OAuth URL
+   */
+  getFacebookOAuthUrl(redirectUri: string): { url: string } {
+    const state = Math.random().toString(36).substring(7);
+    const url = this.facebookService.getOAuthUrl(redirectUri, state);
+    return { url };
+  }
+
+  /**
+   * Handle Facebook OAuth callback
+   */
+  async handleFacebookOAuthCallback(code: string, redirectUri: string): Promise<{ success: boolean; error?: string }> {
+    const result = await this.facebookService.exchangeCodeForToken(code, redirectUri);
+    return { success: result.success, error: result.error };
+  }
+
+  /**
+   * Set Facebook access token manually
+   */
+  setFacebookToken(accessToken: string): { success: boolean } {
+    this.facebookService.setUserAccessToken(accessToken);
+    return { success: true };
+  }
+
+  /**
+   * Get user's Facebook Pages
+   */
+  async getFacebookPages(): Promise<{ success: boolean; pages?: any[]; error?: string }> {
+    return this.facebookService.getPages();
+  }
+
+  /**
+   * Get user's Facebook Groups
+   */
+  async getFacebookGroups(): Promise<{ success: boolean; groups?: any[]; error?: string }> {
+    return this.facebookService.getGroups();
+  }
+
+  /**
+   * Generate Facebook post preview for a deal
+   */
+  async generateFacebookPreview(dealId: string): Promise<{ content: string; characterCount: number }> {
+    const deal = await this.dealRepository.findOne({ where: { id: dealId } });
+    if (!deal) {
+      throw new Error('Deal not found');
+    }
+
+    const content = this.facebookService.generatePostContent(deal);
+    return {
+      content,
+      characterCount: content.length,
+    };
+  }
+
+  /**
+   * Save a Facebook post as draft for approval
+   */
+  async saveFacebookDraft(
+    dealId: string,
+    content: string,
+    targetType: FacebookTargetType,
+    targetId: string,
+    pageAccessToken?: string,
+    includeImage: boolean = true,
+    scheduledAt?: Date,
+  ): Promise<SocialPost> {
+    const deal = await this.dealRepository.findOne({ where: { id: dealId } });
+    if (!deal) {
+      throw new Error('Deal not found');
+    }
+
+    const post = await this.socialPostRepository.create({
+      platform: SocialPlatform.FACEBOOK,
+      dealId,
+      postContent: JSON.stringify({
+        content,
+        targetType,
+        targetId,
+        pageAccessToken,
+      }),
+      imageUrl: includeImage ? deal.imageUrl : undefined,
+      scheduledAt,
+      status: PostStatus.DRAFT,
+    });
+
+    this.logger.log(`Facebook draft saved for deal ${dealId}`, this.context);
+    return post;
+  }
+
+  /**
+   * Post to Facebook immediately
+   */
+  async postToFacebook(
+    dealId: string,
+    content: string,
+    targetType: FacebookTargetType,
+    targetId: string,
+    pageAccessToken?: string,
+    includeImage: boolean = true,
+  ): Promise<SocialPost> {
+    const deal = await this.dealRepository.findOne({ where: { id: dealId } });
+    if (!deal) {
+      throw new Error('Deal not found');
+    }
+
+    // Create the post record
+    const post = await this.socialPostRepository.create({
+      platform: SocialPlatform.FACEBOOK,
+      dealId,
+      postContent: content,
+      imageUrl: includeImage ? deal.imageUrl : undefined,
+      status: PostStatus.DRAFT,
+    });
+
+    // Post to Facebook
+    let result;
+    if (targetType === FacebookTargetType.PAGE) {
+      if (!pageAccessToken) {
+        throw new Error('Page access token required for Page posts');
+      }
+      result = await this.facebookService.postToPage(
+        targetId,
+        pageAccessToken,
+        content,
+        includeImage ? deal.imageUrl : undefined,
+      );
+    } else {
+      result = await this.facebookService.postToGroup(
+        targetId,
+        content,
+        includeImage ? deal.imageUrl : undefined,
+      );
+    }
+
+    if (result.success) {
+      await this.socialPostRepository.update(post.id, {
+        status: PostStatus.POSTED,
+        postId: result.postId,
+        postUrl: result.postUrl,
+        postedAt: new Date(),
+      });
+      this.logger.log(`Facebook post created for deal ${dealId}: ${result.postId}`, this.context);
+    } else {
+      await this.socialPostRepository.update(post.id, {
+        status: PostStatus.FAILED,
+        errorMessage: result.error,
+      });
+      this.logger.error(`Failed to post to Facebook for deal ${dealId}: ${result.error}`, this.context);
+    }
+
+    return this.socialPostRepository.findById(post.id);
+  }
+
+  /**
+   * Schedule a Facebook post for later
+   */
+  async scheduleFacebookPost(
+    dealId: string,
+    content: string,
+    targetType: FacebookTargetType,
+    targetId: string,
+    pageAccessToken?: string,
+    scheduledAt?: Date,
+    includeImage: boolean = true,
+  ): Promise<SocialPost> {
+    const deal = await this.dealRepository.findOne({ where: { id: dealId } });
+    if (!deal) {
+      throw new Error('Deal not found');
+    }
+
+    const post = await this.socialPostRepository.create({
+      platform: SocialPlatform.FACEBOOK,
+      dealId,
+      postContent: JSON.stringify({
+        content,
+        targetType,
+        targetId,
+        pageAccessToken,
+      }),
+      imageUrl: includeImage ? deal.imageUrl : undefined,
+      scheduledAt,
+      status: PostStatus.SCHEDULED,
+    });
+
+    this.logger.log(
+      `Facebook post scheduled for deal ${dealId} at ${scheduledAt?.toISOString()}`,
+      this.context,
+    );
+
+    return post;
   }
 }

@@ -6,6 +6,7 @@ import { Deal } from '../deals/entities/deal.entity';
 import { SocialMediaController } from './social-media.controller';
 import { SocialMediaService } from './social-media.service';
 import { TwitterService } from './twitter/twitter.service';
+import { FacebookService } from './facebook/facebook.service';
 import { TypeOrmSocialPostRepository } from './repositories/typeorm-social-post.repository';
 import { SOCIAL_POST_REPOSITORY } from './repositories/social-post.repository.interface';
 import { SharedModule } from '../../shared/shared.module';
@@ -28,6 +29,7 @@ import { SharedModule } from '../../shared/shared.module';
   providers: [
     SocialMediaService,
     TwitterService,
+    FacebookService,
     TypeOrmSocialPostRepository,
     {
       provide: SOCIAL_POST_REPOSITORY,

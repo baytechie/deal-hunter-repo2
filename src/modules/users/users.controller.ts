@@ -13,7 +13,6 @@ import {
   Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { SaveDealDto, UpdateSavedDealAlertDto } from './dto/save-deal.dto';
 import { RegisterFcmTokenDto } from './dto/fcm-token.dto';
 import { LoggerService } from '../../shared/services/logger.service';

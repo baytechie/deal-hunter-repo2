@@ -15,6 +15,12 @@ import {
   CreateTwitterPostDto,
   GenerateTweetPreviewDto,
 } from './dto/create-twitter-post.dto';
+import {
+  CreateFacebookPostDto,
+  GenerateFacebookPreviewDto,
+  FacebookOAuthCallbackDto,
+  SetFacebookTokenDto,
+} from './facebook/dto';
 import { SocialPlatform, PostStatus } from './types/social-platform.enum';
 import { LoggerService } from '../../shared/services/logger.service';
 
@@ -94,6 +100,148 @@ export class SocialMediaController {
     } catch (error) {
       throw new HttpException(
         error instanceof Error ? error.message : 'Failed to post tweet',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  // ==================== Facebook Endpoints ====================
+
+  /**
+   * Get Facebook connection status
+   */
+  @Get('facebook/status')
+  async getFacebookStatus() {
+    this.logger.debug('GET /social-media/facebook/status', this.context);
+    return this.socialMediaService.getFacebookStatus();
+  }
+
+  /**
+   * Get Facebook OAuth URL
+   */
+  @Get('facebook/oauth-url')
+  async getFacebookOAuthUrl(@Query('redirectUri') redirectUri: string) {
+    this.logger.debug('GET /social-media/facebook/oauth-url', this.context);
+    try {
+      return this.socialMediaService.getFacebookOAuthUrl(redirectUri);
+    } catch (error) {
+      throw new HttpException(
+        error instanceof Error ? error.message : 'Failed to generate OAuth URL',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  /**
+   * Handle Facebook OAuth callback
+   */
+  @Post('facebook/oauth-callback')
+  async handleFacebookOAuthCallback(@Body() dto: FacebookOAuthCallbackDto, @Query('redirectUri') redirectUri: string) {
+    this.logger.debug('POST /social-media/facebook/oauth-callback', this.context);
+    try {
+      return await this.socialMediaService.handleFacebookOAuthCallback(dto.code, redirectUri);
+    } catch (error) {
+      throw new HttpException(
+        error instanceof Error ? error.message : 'Failed to process OAuth callback',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  /**
+   * Set Facebook access token manually
+   */
+  @Post('facebook/set-token')
+  async setFacebookToken(@Body() dto: SetFacebookTokenDto) {
+    this.logger.debug('POST /social-media/facebook/set-token', this.context);
+    return this.socialMediaService.setFacebookToken(dto.accessToken);
+  }
+
+  /**
+   * Get user's Facebook Pages
+   */
+  @Get('facebook/pages')
+  async getFacebookPages() {
+    this.logger.debug('GET /social-media/facebook/pages', this.context);
+    return this.socialMediaService.getFacebookPages();
+  }
+
+  /**
+   * Get user's Facebook Groups
+   */
+  @Get('facebook/groups')
+  async getFacebookGroups() {
+    this.logger.debug('GET /social-media/facebook/groups', this.context);
+    return this.socialMediaService.getFacebookGroups();
+  }
+
+  /**
+   * Generate Facebook post preview for a deal
+   */
+  @Post('facebook/preview')
+  async generateFacebookPreview(@Body() dto: GenerateFacebookPreviewDto) {
+    this.logger.debug(`POST /social-media/facebook/preview - dealId: ${dto.dealId}`, this.context);
+    try {
+      return await this.socialMediaService.generateFacebookPreview(dto.dealId);
+    } catch (error) {
+      throw new HttpException(
+        error instanceof Error ? error.message : 'Failed to generate preview',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  /**
+   * Post to Facebook (Page or Group)
+   */
+  @Post('facebook/post')
+  async postToFacebook(@Body() dto: CreateFacebookPostDto) {
+    this.logger.debug(`POST /social-media/facebook/post - dealId: ${dto.dealId}, targetType: ${dto.targetType}`, this.context);
+
+    try {
+      const scheduledDate = dto.scheduledAt ? new Date(dto.scheduledAt) : undefined;
+
+      if (scheduledDate && scheduledDate <= new Date()) {
+        throw new Error('Scheduled time must be in the future');
+      }
+
+      // If saveAsDraft is true, save for approval
+      if (dto.saveAsDraft) {
+        return await this.socialMediaService.saveFacebookDraft(
+          dto.dealId,
+          dto.content,
+          dto.targetType,
+          dto.targetId,
+          dto.pageAccessToken,
+          dto.includeImage ?? true,
+          scheduledDate,
+        );
+      }
+
+      // Otherwise, post immediately or schedule
+      if (scheduledDate) {
+        return await this.socialMediaService.scheduleFacebookPost(
+          dto.dealId,
+          dto.content,
+          dto.targetType,
+          dto.targetId,
+          dto.pageAccessToken,
+          scheduledDate,
+          dto.includeImage ?? true,
+        );
+      } else {
+        return await this.socialMediaService.postToFacebook(
+          dto.dealId,
+          dto.content,
+          dto.targetType,
+          dto.targetId,
+          dto.pageAccessToken,
+          dto.includeImage ?? true,
+        );
+      }
+    } catch (error) {
+      throw new HttpException(
+        error instanceof Error ? error.message : 'Failed to post to Facebook',
         HttpStatus.BAD_REQUEST,
       );
     }
