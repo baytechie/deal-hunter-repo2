@@ -68,25 +68,14 @@ class AppHeader extends ConsumerWidget {
             },
             child: Row(
               children: [
-                // $ Icon in gradient container
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [AppColors.primary, AppColors.primaryLight],
-                    ),
-                    borderRadius: BorderRadius.circular(AppRadius.md),
-                  ),
-                  child: const Center(
-                    child: Text(
-                      '\$',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                // App Logo
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  child: Image.asset(
+                    'assets/icon/app_icon.png',
+                    width: 36,
+                    height: 36,
+                    fit: BoxFit.cover,
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -170,20 +159,11 @@ class AppHeaderBar extends ConsumerWidget implements PreferredSizeWidget {
         },
         child: Container(
           margin: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [AppColors.primary, AppColors.primaryLight],
-            ),
+          child: ClipRRect(
             borderRadius: BorderRadius.circular(AppRadius.sm),
-          ),
-          child: const Center(
-            child: Text(
-              '\$',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+            child: Image.asset(
+              'assets/icon/app_icon.png',
+              fit: BoxFit.cover,
             ),
           ),
         ),
