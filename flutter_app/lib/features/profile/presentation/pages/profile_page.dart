@@ -198,7 +198,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           children: [
             const SizedBox(height: 16),
 
-            // Logo
+            // Logo with white background
             Container(
               width: 80,
               height: 80,
@@ -207,20 +207,18 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
+                    color: Colors.black.withOpacity(0.15),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Image.asset(
-                  'assets/icon/app_icon.png',
-                  width: 80,
-                  height: 80,
-                  fit: BoxFit.cover,
-                ),
+              padding: const EdgeInsets.all(8),
+              child: Image.asset(
+                'assets/icon/app_icon.png',
+                width: 64,
+                height: 64,
+                fit: BoxFit.contain,
               ),
             ),
             const SizedBox(height: 16),

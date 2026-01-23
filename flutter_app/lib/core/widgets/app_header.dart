@@ -68,10 +68,10 @@ class AppHeader extends ConsumerWidget {
             },
             child: Row(
               children: [
-                // App Logo
+                // App Logo with white background
                 Container(
-                  width: 36,
-                  height: 36,
+                  width: 40,
+                  height: 40,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(AppRadius.md),
@@ -83,14 +83,12 @@ class AppHeader extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(AppRadius.md),
-                    child: Image.asset(
-                      'assets/icon/app_icon.png',
-                      width: 36,
-                      height: 36,
-                      fit: BoxFit.cover,
-                    ),
+                  padding: const EdgeInsets.all(4),
+                  child: Image.asset(
+                    'assets/icon/app_icon.png',
+                    width: 32,
+                    height: 32,
+                    fit: BoxFit.contain,
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -185,12 +183,10 @@ class AppHeaderBar extends ConsumerWidget implements PreferredSizeWidget {
               ),
             ],
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(AppRadius.sm),
-            child: Image.asset(
-              'assets/icon/app_icon.png',
-              fit: BoxFit.cover,
-            ),
+          padding: const EdgeInsets.all(4),
+          child: Image.asset(
+            'assets/icon/app_icon.png',
+            fit: BoxFit.contain,
           ),
         ),
       ),
