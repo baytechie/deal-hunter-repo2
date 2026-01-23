@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:money_saver_deals/app_shell.dart';
+import 'package:money_saver_deals/core/presentation/pages/privacy_policy_page.dart';
 import 'package:money_saver_deals/core/services/logging_service.dart';
 import 'package:money_saver_deals/core/theme/app_theme.dart';
 import 'package:money_saver_deals/features/deals/data/datasources/api_client.dart';
@@ -115,6 +116,10 @@ class MoneySaverDealsApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: buildAppTheme(),
       home: const AppShell(),
+      // Named routes for deep linking (PWA/Android compliance)
+      routes: {
+        PrivacyPolicyPage.routeName: (context) => const PrivacyPolicyPage(),
+      },
     );
   }
 }

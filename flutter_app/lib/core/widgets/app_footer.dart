@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:money_saver_deals/core/presentation/pages/privacy_policy_page.dart';
 import 'package:money_saver_deals/core/theme/app_theme.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -109,10 +110,11 @@ class AppFooter extends StatelessWidget {
             children: [
               _LegalLink(
                 label: 'Privacy Policy',
-                onTap: () => _showLegalDialog(
+                onTap: () => Navigator.push(
                   context,
-                  'Privacy Policy',
-                  _privacyPolicyText,
+                  MaterialPageRoute(
+                    builder: (context) => const PrivacyPolicyPage(),
+                  ),
                 ),
               ),
               Text('•', style: TextStyle(color: Colors.grey[400])),
@@ -206,14 +208,18 @@ class _LegalLink extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return InkWell(
       onTap: onTap,
-      child: Text(
-        label,
-        style: TextStyle(
-          color: Colors.grey[600],
-          fontSize: 12,
-          decoration: TextDecoration.underline,
+      borderRadius: BorderRadius.circular(4),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: Colors.grey[600],
+            fontSize: 12,
+            decoration: TextDecoration.underline,
+          ),
         ),
       ),
     );
