@@ -60,4 +60,52 @@ export class CreateDealDto {
   @IsOptional()
   @IsString()
   promoDescription?: string;
+
+  // Amazon deal information
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  dealBadge?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  dealAccessType?: string;
+
+  @IsOptional()
+  @IsDateString()
+  dealEndTime?: string;
+
+  // Promotion information
+  @IsOptional()
+  @IsBoolean()
+  hasPromotion?: boolean;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  promotionType?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  promotionAmount?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  promotionPercent?: number;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  promotionDisplayText?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isSubscribeAndSave?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  isCouponAvailable?: boolean;
 }

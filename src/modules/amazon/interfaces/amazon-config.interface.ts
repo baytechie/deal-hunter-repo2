@@ -9,6 +9,18 @@ export interface AmazonPaapiConfig {
 }
 
 /**
+ * Promotion data extracted from Offers.Listings.Promotions
+ */
+export interface AmazonPromotion {
+  type?: string; // "SNS" (Subscribe & Save), "Coupon", etc.
+  amount?: number; // Dollar value of promotion
+  currency?: string; // "USD", etc.
+  discountPercent?: number; // Percentage off
+  pricePerUnit?: number; // Per-unit price for bulk deals
+  displayAmount?: string; // Pre-formatted text like "$5.00 off"
+}
+
+/**
  * Amazon product from PAAPI response
  */
 export interface AmazonProduct {
@@ -21,12 +33,28 @@ export interface AmazonProduct {
   imageUrl?: string;
   productUrl: string;
   category: string;
+
   // Deal information from OffersV2.DealDetails
   dealBadge?: string; // e.g., "Limited Time Deal", "Deal of the Day"
   dealAccessType?: string; // "ALL", "PRIME_EXCLUSIVE", "PRIME_EARLY_ACCESS"
   dealStartTime?: string;
   dealEndTime?: string;
   dealPercentClaimed?: number;
+
+  // Promotion/Coupon information from Offers.Listings.Promotions
+  hasPromotion: boolean; // Flag indicating if any promotion exists
+  promotionType?: string; // "SNS", "Coupon", "Lightning Deal", etc.
+  promotionAmount?: number; // Dollar value of promotion
+  promotionPercent?: number; // Percentage off from promotion
+  promotionDisplayText?: string; // Pre-formatted display text
+  isSubscribeAndSave: boolean; // Flag for Subscribe & Save deals
+  isCouponAvailable: boolean; // Flag indicating clippable coupon exists
+  allPromotions?: AmazonPromotion[]; // All raw promotion data
+
+  // Savings information from Offers.Listings.SavingBasis
+  savingBasisType?: string; // "LIST_PRICE", "WAS_PRICE", etc.
+  savingsAmount?: number; // Total savings in dollars
+  savingsPercent?: number; // Total savings percentage
 }
 
 /**

@@ -73,4 +73,43 @@ export class PendingDeal {
 
   @Column({ nullable: true })
   dealEndTime: Date | null;
+
+  @Column({ nullable: true })
+  dealStartTime: Date | null;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  dealPercentClaimed: number | null;
+
+  // Enhanced promotion information from PAAPI
+  @Column({ type: 'boolean', default: false })
+  hasPromotion: boolean;
+
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  promotionType: string | null; // "Coupon", "SNS", "Lightning Deal", etc.
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  promotionAmount: number | null; // Dollar value of promotion
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  promotionPercent: number | null; // Percentage off from promotion
+
+  @Column({ type: 'varchar', length: 500, nullable: true })
+  promotionDisplayText: string | null; // Pre-formatted display text like "$5.00 off coupon"
+
+  @Column({ type: 'boolean', default: false })
+  isSubscribeAndSave: boolean;
+
+  @Column({ type: 'boolean', default: false })
+  isCouponAvailable: boolean; // Flag indicating clippable coupon exists on Amazon
+
+  // Savings information
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  savingBasisType: string | null; // "LIST_PRICE", "WAS_PRICE", etc.
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  savingsAmount: number | null; // Total savings in dollars
+
+  // Raw promotion data as JSON for reference
+  @Column({ type: 'text', nullable: true })
+  rawPromotionData: string | null; // JSON string of all promotions
 }

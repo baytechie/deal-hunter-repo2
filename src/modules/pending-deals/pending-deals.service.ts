@@ -88,6 +88,12 @@ export class PendingDealsService {
         continue;
       }
 
+      // Auto-generate promo description from promotion data
+      let promoDescription = product.promotionDisplayText || null;
+      if (!promoDescription && product.isCouponAvailable) {
+        promoDescription = 'Clip coupon on Amazon product page for additional savings';
+      }
+
       await this.pendingDealsRepository.create({
         asin: product.asin,
         title: product.title,
@@ -103,6 +109,23 @@ export class PendingDealsService {
         dealBadge: product.dealBadge || null,
         dealAccessType: product.dealAccessType || null,
         dealEndTime: product.dealEndTime ? new Date(product.dealEndTime) : null,
+        dealStartTime: product.dealStartTime ? new Date(product.dealStartTime) : null,
+        dealPercentClaimed: product.dealPercentClaimed || null,
+        // Enhanced promotion information
+        hasPromotion: product.hasPromotion || false,
+        promotionType: product.promotionType || null,
+        promotionAmount: product.promotionAmount || null,
+        promotionPercent: product.promotionPercent || null,
+        promotionDisplayText: product.promotionDisplayText || null,
+        isSubscribeAndSave: product.isSubscribeAndSave || false,
+        isCouponAvailable: product.isCouponAvailable || false,
+        // Savings information
+        savingBasisType: product.savingBasisType || null,
+        savingsAmount: product.savingsAmount || null,
+        // Auto-generated promo description
+        promoDescription,
+        // Store raw promotion data for reference
+        rawPromotionData: product.allPromotions ? JSON.stringify(product.allPromotions) : null,
       });
 
       created++;
@@ -168,7 +191,22 @@ export class PendingDealsService {
     // Create affiliate link with tag
     const affiliateLink = this.affiliateService.sanitizeAffiliateUrl(pendingDeal.productUrl);
 
-    // Create the published deal
+    // Determine final promotion values (admin overrides take precedence)
+    const isCouponAvailable = dto.isCouponAvailable ?? pendingDeal.isCouponAvailable ?? false;
+    const promotionAmount = dto.promotionAmount ?? pendingDeal.promotionAmount ?? null;
+    const promotionPercent = dto.promotionPercent ?? pendingDeal.promotionPercent ?? null;
+    const promotionDisplayText = dto.promotionDisplayText || pendingDeal.promotionDisplayText || null;
+
+    // If admin provides coupon code or marks as having coupon, ensure hasPromotion is true
+    const hasPromotion = !!(
+      pendingDeal.hasPromotion ||
+      dto.couponCode ||
+      dto.isCouponAvailable ||
+      dto.promotionAmount ||
+      dto.promotionPercent
+    );
+
+    // Create the published deal with all promotion data
     const deal = this.dealRepository.create({
       title: dto.customTitle || pendingDeal.title,
       description: pendingDeal.description,
@@ -184,6 +222,18 @@ export class PendingDealsService {
       pendingDealId: pendingDeal.id,
       couponCode: dto.couponCode || pendingDeal.couponCode || null,
       promoDescription: dto.promoDescription || pendingDeal.promoDescription || null,
+      // Amazon deal information
+      dealBadge: pendingDeal.dealBadge || null,
+      dealAccessType: pendingDeal.dealAccessType || null,
+      dealEndTime: pendingDeal.dealEndTime || null,
+      // Enhanced promotion information (with admin overrides)
+      hasPromotion,
+      promotionType: pendingDeal.promotionType || (dto.couponCode ? 'Coupon' : null),
+      promotionAmount,
+      promotionPercent,
+      promotionDisplayText,
+      isSubscribeAndSave: pendingDeal.isSubscribeAndSave || false,
+      isCouponAvailable,
     });
 
     const savedDeal = await this.dealRepository.save(deal);

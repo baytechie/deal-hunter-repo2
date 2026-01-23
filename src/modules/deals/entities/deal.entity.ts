@@ -62,6 +62,38 @@ export class Deal {
   @Column({ type: 'text', nullable: true })
   promoDescription: string | null;
 
+  // Amazon deal information
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  dealBadge: string | null; // e.g., "Limited Time Deal", "Deal of the Day"
+
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  dealAccessType: string | null; // "ALL", "PRIME_EXCLUSIVE", "PRIME_EARLY_ACCESS"
+
+  @Column({ nullable: true })
+  dealEndTime: Date | null;
+
+  // Enhanced promotion information from PAAPI
+  @Column({ type: 'boolean', default: false })
+  hasPromotion: boolean;
+
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  promotionType: string | null; // "Coupon", "SNS", "Lightning Deal", etc.
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  promotionAmount: number | null;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  promotionPercent: number | null;
+
+  @Column({ type: 'varchar', length: 500, nullable: true })
+  promotionDisplayText: string | null; // Pre-formatted display text like "$5.00 off coupon"
+
+  @Column({ type: 'boolean', default: false })
+  isSubscribeAndSave: boolean;
+
+  @Column({ type: 'boolean', default: false })
+  isCouponAvailable: boolean; // Flag indicating clippable coupon exists on Amazon
+
   @CreateDateColumn()
   createdAt: Date;
 

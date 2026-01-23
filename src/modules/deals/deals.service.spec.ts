@@ -29,6 +29,18 @@ describe('DealsService', () => {
     pendingDealId: null,
     couponCode: 'SAVE50',
     promoDescription: 'Limited time offer',
+    // Amazon deal information
+    dealBadge: null,
+    dealAccessType: null,
+    dealEndTime: null,
+    // Promotion information
+    hasPromotion: false,
+    promotionType: null,
+    promotionAmount: null,
+    promotionPercent: null,
+    promotionDisplayText: null,
+    isSubscribeAndSave: false,
+    isCouponAvailable: false,
     createdAt: new Date(),
     updatedAt: new Date(),
     calculateDiscountPercentage: jest.fn(),

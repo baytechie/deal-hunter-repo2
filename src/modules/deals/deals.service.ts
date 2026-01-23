@@ -128,6 +128,7 @@ export class DealsService {
       affiliateLink: sanitizedAffiliateLink,
       discountPercentage,
       expiryDate: createDealDto.expiryDate ? new Date(createDealDto.expiryDate) : undefined,
+      dealEndTime: createDealDto.dealEndTime ? new Date(createDealDto.dealEndTime) : undefined,
     };
 
     const deal = await this.dealsRepository.create(dealData);
@@ -192,6 +193,7 @@ export class DealsService {
       ...(sanitizedAffiliateLink && { affiliateLink: sanitizedAffiliateLink }),
       ...(discountPercentage !== undefined && { discountPercentage }),
       ...(updateData.expiryDate && { expiryDate: new Date(updateData.expiryDate) }),
+      ...(updateData.dealEndTime && { dealEndTime: new Date(updateData.dealEndTime) }),
     };
 
     const updatedDeal = await this.dealsRepository.update(id, dealData);

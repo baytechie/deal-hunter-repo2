@@ -4,6 +4,7 @@ import { LoggerService } from '../../../shared/services/logger.service';
 import {
   AmazonPaapiConfig,
   AmazonProduct,
+  AmazonPromotion,
   AmazonSearchParams,
   CATEGORY_TO_SEARCH_INDEX,
 } from '../interfaces/amazon-config.interface';
@@ -116,13 +117,28 @@ export class AmazonPaapiService implements OnModuleInit {
         SearchIndex: searchIndex,
         ItemCount: Math.min(params.itemCount || 10, 10), // Amazon max is 10 per request
         Resources: [
+          // Item information
           'ItemInfo.Title',
           'ItemInfo.Features',
+          // Images
+          'Images.Primary.Large',
+          // Browse nodes for category info
+          'BrowseNodeInfo.BrowseNodes',
+          // Offers - comprehensive pricing and promotion data
           'Offers.Listings.Price',
           'Offers.Listings.SavingBasis',
           'Offers.Listings.Promotions',
-          'Images.Primary.Large',
-          'BrowseNodeInfo.BrowseNodes',
+          'Offers.Listings.Condition',
+          'Offers.Listings.Availability.Type',
+          'Offers.Listings.MerchantInfo',
+          'Offers.Listings.IsBuyBoxWinner',
+          // OffersV2 - newer API with better deal details
+          'OffersV2.Listings.Price',
+          'OffersV2.Listings.SavingBasis',
+          'OffersV2.Listings.Promotions',
+          'OffersV2.Listings.DealDetails',
+          'OffersV2.Listings.Condition',
+          'OffersV2.Listings.Availability',
         ],
         ...(params.itemPage && { ItemPage: params.itemPage }), // Pagination (1-10)
         ...(params.minPrice && { MinPrice: params.minPrice * 100 }), // Convert to cents
@@ -219,67 +235,114 @@ export class AmazonPaapiService implements OnModuleInit {
 
   /**
    * Parse Amazon PAAPI search results into our product format
+   * Enhanced to extract all available promotion and coupon data
    */
   private parseSearchResults(items: any[], category: string): AmazonProduct[] {
     return items
       .map(item => {
         try {
-          const listing = item.Offers?.Listings?.[0];
+          // Try OffersV2 first (newer, more reliable), fallback to Offers
+          const listingV2 = item.OffersV2?.Listings?.[0];
+          const listing = listingV2 || item.Offers?.Listings?.[0];
           if (!listing) return null;
 
-          const price = listing.Price?.Amount || 0;
-          const originalPrice = listing.SavingBasis?.Amount || price;
+          const price = listing.Price?.Amount || listing.Price?.Money?.Amount || 0;
+          const originalPrice = listing.SavingBasis?.Amount || listing.SavingBasis?.Money?.Amount || price;
           const discountPercentage =
             originalPrice > 0 ? ((originalPrice - price) / originalPrice) * 100 : 0;
 
-          // Extract promotion/deal information
+          // Extract savings information
+          const savingsData = listing.Savings || {};
+          const savingsAmount = savingsData.Amount || savingsData.Money?.Amount;
+          const savingsPercent = savingsData.Percentage;
+          const savingBasisType = listing.SavingBasis?.PriceType;
+
+          // Parse all promotions
           const promotions = listing.Promotions || [];
+          const parsedPromotions = this.parsePromotions(promotions, item.ASIN);
+
+          // Extract deal details (from OffersV2)
+          const dealDetails = listing.DealDetails;
           let dealBadge: string | undefined;
           let dealAccessType: string | undefined;
+          let dealStartTime: string | undefined;
+          let dealEndTime: string | undefined;
+          let dealPercentClaimed: number | undefined;
 
-          // Check for promotions (coupons, discounts, etc.)
-          if (promotions.length > 0) {
-            const promo = promotions[0];
-            // Promotions may have Type, DiscountPercent, Amount, etc.
-            if (promo.Type) {
-              dealBadge = promo.Type;
-            }
-            if (promo.DiscountPercent) {
-              dealBadge = `${promo.DiscountPercent}% Off Coupon`;
-            }
-            this.logger.debug(
-              `Found promotion for ${item.ASIN}: ${JSON.stringify(promo)}`,
-              this.context,
-            );
-          }
-
-          // Check for deal details (Limited Time Deal, etc.)
-          const dealDetails = listing.DealDetails;
           if (dealDetails) {
-            dealBadge = dealDetails.Badge || dealBadge;
+            dealBadge = dealDetails.Badge;
             dealAccessType = dealDetails.AccessType;
+            dealStartTime = dealDetails.StartTime;
+            dealEndTime = dealDetails.EndTime;
+            dealPercentClaimed = dealDetails.PercentClaimed;
             this.logger.debug(
-              `Found deal for ${item.ASIN}: ${JSON.stringify(dealDetails)}`,
+              `Found deal for ${item.ASIN}: Badge=${dealBadge}, Access=${dealAccessType}, End=${dealEndTime}`,
               this.context,
             );
           }
 
-          return {
+          // Determine promotion flags and extract primary promotion info
+          const hasPromotion = parsedPromotions.length > 0 || !!dealDetails;
+          const isSubscribeAndSave = parsedPromotions.some(p => p.type === 'SNS' || p.type === 'SubscribeAndSave');
+          const isCouponAvailable = parsedPromotions.some(p =>
+            p.type === 'Coupon' ||
+            p.discountPercent !== undefined ||
+            (p.displayAmount && p.displayAmount.toLowerCase().includes('coupon'))
+          );
+
+          // Get the primary promotion (prefer coupon, then any other)
+          const primaryPromo = parsedPromotions.find(p => p.type === 'Coupon') || parsedPromotions[0];
+
+          // Build display text for promotion
+          let promotionDisplayText = this.buildPromotionDisplayText(primaryPromo, dealDetails);
+
+          // If no specific promotion but there's a deal badge, use that
+          if (!promotionDisplayText && dealBadge) {
+            promotionDisplayText = dealBadge;
+          }
+
+          const product: AmazonProduct = {
             asin: item.ASIN,
             title: item.ItemInfo?.Title?.DisplayValue || 'Unknown Product',
-            description: item.ItemInfo?.Features?.DisplayValues?.join(' ') || null,
+            description: item.ItemInfo?.Features?.DisplayValues?.join(' ') || undefined,
             price,
             originalPrice,
             discountPercentage: Number(discountPercentage.toFixed(2)),
-            imageUrl: item.Images?.Primary?.Large?.URL || null,
+            imageUrl: item.Images?.Primary?.Large?.URL || undefined,
             productUrl: item.DetailPageURL,
             category,
+            // Deal details
             dealBadge,
             dealAccessType,
-            dealStartTime: dealDetails?.StartTime,
-            dealEndTime: dealDetails?.EndTime,
-            dealPercentClaimed: dealDetails?.PercentClaimed,
-          } as AmazonProduct;
+            dealStartTime,
+            dealEndTime,
+            dealPercentClaimed,
+            // Promotion flags and data
+            hasPromotion,
+            promotionType: primaryPromo?.type,
+            promotionAmount: primaryPromo?.amount,
+            promotionPercent: primaryPromo?.discountPercent,
+            promotionDisplayText,
+            isSubscribeAndSave,
+            isCouponAvailable,
+            allPromotions: parsedPromotions.length > 0 ? parsedPromotions : undefined,
+            // Savings info
+            savingBasisType,
+            savingsAmount,
+            savingsPercent,
+          };
+
+          // Log comprehensive promotion info for debugging
+          if (hasPromotion) {
+            this.logger.log(
+              `Product ${item.ASIN} promotions: ` +
+              `hasPromo=${hasPromotion}, coupon=${isCouponAvailable}, SNS=${isSubscribeAndSave}, ` +
+              `display="${promotionDisplayText}", badge="${dealBadge}"`,
+              this.context,
+            );
+          }
+
+          return product;
         } catch (error) {
           this.logger.warn(`Failed to parse item: ${error.message}`, this.context);
           return null;
@@ -289,7 +352,87 @@ export class AmazonPaapiService implements OnModuleInit {
   }
 
   /**
+   * Parse promotion objects from Amazon API response
+   */
+  private parsePromotions(promotions: any[], asin: string): AmazonPromotion[] {
+    if (!promotions || promotions.length === 0) return [];
+
+    const parsed: AmazonPromotion[] = [];
+
+    for (const promo of promotions) {
+      try {
+        const promotion: AmazonPromotion = {
+          type: promo.Type,
+          amount: promo.Amount || promo.Money?.Amount,
+          currency: promo.Currency || promo.Money?.Currency,
+          discountPercent: promo.DiscountPercent,
+          pricePerUnit: promo.PricePerUnit,
+          displayAmount: promo.DisplayAmount,
+        };
+
+        // Log raw promotion data for analysis
+        this.logger.debug(
+          `Raw promotion for ${asin}: ${JSON.stringify(promo)}`,
+          this.context,
+        );
+
+        parsed.push(promotion);
+      } catch (error) {
+        this.logger.warn(`Failed to parse promotion for ${asin}: ${error.message}`, this.context);
+      }
+    }
+
+    return parsed;
+  }
+
+  /**
+   * Build human-readable promotion display text
+   */
+  private buildPromotionDisplayText(
+    promo: AmazonPromotion | undefined,
+    dealDetails: any,
+  ): string | undefined {
+    if (!promo && !dealDetails) return undefined;
+
+    const parts: string[] = [];
+
+    // Handle promotion data
+    if (promo) {
+      // If we have a pre-formatted display amount, use it
+      if (promo.displayAmount) {
+        parts.push(promo.displayAmount);
+      } else if (promo.discountPercent) {
+        parts.push(`${promo.discountPercent}% off coupon`);
+      } else if (promo.amount) {
+        const currency = promo.currency || 'USD';
+        const symbol = currency === 'USD' ? '$' : currency;
+        parts.push(`${symbol}${promo.amount.toFixed(2)} off`);
+      }
+
+      // Add promotion type info
+      if (promo.type === 'SNS' || promo.type === 'SubscribeAndSave') {
+        parts.push('with Subscribe & Save');
+      }
+    }
+
+    // Add deal badge if present
+    if (dealDetails?.Badge && !parts.some(p => p.includes(dealDetails.Badge))) {
+      parts.push(dealDetails.Badge);
+    }
+
+    // Add Prime exclusivity info
+    if (dealDetails?.AccessType === 'PRIME_EXCLUSIVE') {
+      parts.push('(Prime Exclusive)');
+    } else if (dealDetails?.AccessType === 'PRIME_EARLY_ACCESS') {
+      parts.push('(Prime Early Access)');
+    }
+
+    return parts.length > 0 ? parts.join(' - ') : undefined;
+  }
+
+  /**
    * Generate mock products for testing when PAAPI is not configured
+   * Enhanced with promotion data to simulate real API responses
    */
   private getMockProducts(params: AmazonSearchParams): AmazonProduct[] {
     const category = params.category || 'Electronics';
@@ -311,10 +454,37 @@ export class AmazonPaapiService implements OnModuleInit {
       'Webcam 1080p HD',
     ];
 
+    const dealBadges = [
+      'Limited Time Deal',
+      'Deal of the Day',
+      'Lightning Deal',
+      'Black Friday Deal',
+      undefined,
+      undefined,
+    ];
+
     for (let i = 0; i < count; i++) {
       const originalPrice = 50 + Math.random() * 150;
       const discountPercent = Math.max(minDiscount, 15 + Math.random() * 50);
       const price = originalPrice * (1 - discountPercent / 100);
+
+      // Randomly assign promotions
+      const hasCoupon = Math.random() > 0.5;
+      const couponPercent = hasCoupon ? Math.floor(5 + Math.random() * 20) : undefined;
+      const hasSubscribeAndSave = Math.random() > 0.7;
+      const dealBadge = dealBadges[Math.floor(Math.random() * dealBadges.length)];
+
+      const hasPromotion = hasCoupon || hasSubscribeAndSave || !!dealBadge;
+
+      // Build promotion display text
+      let promotionDisplayText: string | undefined;
+      if (couponPercent) {
+        promotionDisplayText = `${couponPercent}% off coupon`;
+      } else if (hasSubscribeAndSave) {
+        promotionDisplayText = 'Save 5% with Subscribe & Save';
+      } else if (dealBadge) {
+        promotionDisplayText = dealBadge;
+      }
 
       mockProducts.push({
         asin: `B0${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
@@ -326,10 +496,24 @@ export class AmazonPaapiService implements OnModuleInit {
         imageUrl: `https://via.placeholder.com/300x300?text=${encodeURIComponent(productNames[i % productNames.length])}`,
         productUrl: `https://www.amazon.com/dp/B0${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
         category,
+        // Deal information
+        dealBadge,
+        dealAccessType: Math.random() > 0.8 ? 'PRIME_EXCLUSIVE' : 'ALL',
+        dealEndTime: dealBadge ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() : undefined,
+        // Promotion data
+        hasPromotion,
+        promotionType: hasCoupon ? 'Coupon' : (hasSubscribeAndSave ? 'SNS' : undefined),
+        promotionPercent: couponPercent,
+        promotionDisplayText,
+        isSubscribeAndSave: hasSubscribeAndSave,
+        isCouponAvailable: hasCoupon,
+        // Savings
+        savingsAmount: Number((originalPrice - price).toFixed(2)),
+        savingsPercent: Number(discountPercent.toFixed(2)),
       });
     }
 
-    this.logger.log(`Generated ${mockProducts.length} mock products`, this.context);
+    this.logger.log(`Generated ${mockProducts.length} mock products with promotion data`, this.context);
     return mockProducts;
   }
 }
