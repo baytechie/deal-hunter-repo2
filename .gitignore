@@ -31,3 +31,8 @@ tmp/
 temp/
 .vercel
 .env*.local
+
+# Android signing (never commit these!)
+*.jks
+*.keystore
+key.properties
