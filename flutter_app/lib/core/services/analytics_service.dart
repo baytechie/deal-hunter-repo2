@@ -1,5 +1,8 @@
-import 'dart:js_interop';
 import 'package:flutter/foundation.dart';
+
+// Conditional import: uses stub on mobile, web implementation on web
+import 'analytics_service_stub.dart'
+    if (dart.library.html) 'analytics_service_web.dart' as platform_analytics;
 
 /// Analytics event model for tracking user interactions
 ///
@@ -69,7 +72,7 @@ class AnalyticsService {
     if (!_isEnabled) return;
 
     if (kIsWeb) {
-      _callTrackPageView(pageName);
+      platform_analytics.trackPageViewJS(pageName);
     }
     debugPrint('[Analytics] Page view: $pageName');
   }
@@ -99,9 +102,9 @@ class AnalyticsService {
     // Store event locally (for debugging/testing)
     _events.add(event);
 
-    // Send to Google Analytics 4
+    // Send to Google Analytics 4 (web only)
     if (kIsWeb) {
-      _callTrackEvent(name, parameters ?? {});
+      platform_analytics.trackEventJS(name, parameters);
     }
   }
 
@@ -283,31 +286,4 @@ class AnalyticsService {
     debugPrint('[AnalyticsService] Clearing ${_events.length} events');
     _events.clear();
   }
-
-  // JavaScript interop for web (GA4)
-  void _callTrackEvent(String eventName, Map<String, dynamic> params) {
-    try {
-      final jsParams = params.jsify();
-      if (jsParams != null) {
-        _trackEventJS(eventName.toJS, jsParams);
-      }
-    } catch (e) {
-      debugPrint('[Analytics] Error tracking event: $e');
-    }
-  }
-
-  void _callTrackPageView(String pageName) {
-    try {
-      _trackPageViewJS(pageName.toJS);
-    } catch (e) {
-      debugPrint('[Analytics] Error tracking page view: $e');
-    }
-  }
 }
-
-// JavaScript interop functions to call GA4
-@JS('trackEvent')
-external void _trackEventJS(JSString eventName, JSAny? params);
-
-@JS('trackPageView')
-external void _trackPageViewJS(JSString pageName);
