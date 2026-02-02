@@ -8,6 +8,7 @@ import { RssFeedsService } from './rss-feeds.service';
 import { RssCrawlerService } from './services/rss-crawler.service';
 import { TypeOrmRssFeedsRepository } from './repositories/typeorm-rss-feeds.repository';
 import { RSS_FEEDS_REPOSITORY } from './repositories/rss-feeds.repository.interface';
+import { RssFeedsSeedService } from './seeds/rss-feeds.seed';
 
 /**
  * RssFeedsModule - Feature module for RSS feed functionality
@@ -31,6 +32,7 @@ import { RSS_FEEDS_REPOSITORY } from './repositories/rss-feeds.repository.interf
   providers: [
     RssFeedsService,
     RssCrawlerService,
+    RssFeedsSeedService,
     TypeOrmRssFeedsRepository,
     // Bind the interface token to the concrete implementation
     {

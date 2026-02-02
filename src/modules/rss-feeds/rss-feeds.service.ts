@@ -1,4 +1,4 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { LoggerService } from '../../shared/services/logger.service';
 import { RssFeedSource } from './entities/rss-feed-source.entity';
@@ -25,8 +25,9 @@ import { UpdateRssFeedSourceDto } from './dto/update-rss-feed-source.dto';
  * - Deal filtering and retrieval
  */
 @Injectable()
-export class RssFeedsService {
+export class RssFeedsService implements OnModuleInit {
   private readonly context = 'RssFeedsService';
+  private isInitialCrawlDone = false;
 
   constructor(
     @Inject(RSS_FEEDS_REPOSITORY)
@@ -34,6 +35,26 @@ export class RssFeedsService {
     private readonly crawler: RssCrawlerService,
     private readonly logger: LoggerService,
   ) {}
+
+  /**
+   * Trigger initial crawl after module initialization
+   * Waits a short delay to ensure seed data is loaded
+   */
+  async onModuleInit(): Promise<void> {
+    // Delay initial crawl by 10 seconds to ensure database is ready and seeds are loaded
+    setTimeout(async () => {
+      if (!this.isInitialCrawlDone) {
+        this.logger.log('Starting initial RSS feed crawl on startup...', this.context);
+        try {
+          await this.crawlAllSources();
+          this.isInitialCrawlDone = true;
+          this.logger.log('Initial RSS feed crawl completed', this.context);
+        } catch (error) {
+          this.logger.error(`Initial crawl failed: ${error.message}`, error.stack, this.context);
+        }
+      }
+    }, 10000);
+  }
 
   // =====================
   // RSS Feed Source Operations
