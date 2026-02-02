@@ -13,6 +13,9 @@ import 'package:money_saver_deals/features/deals/data/repositories/deals_reposit
 import 'package:money_saver_deals/features/deals/presentation/providers/deals_provider.dart';
 import 'package:money_saver_deals/features/notifications/data/repositories/notifications_repository_impl.dart';
 import 'package:money_saver_deals/features/notifications/presentation/providers/notifications_provider.dart';
+import 'package:money_saver_deals/features/rss_feed/data/datasources/rss_feed_api_client.dart';
+import 'package:money_saver_deals/features/rss_feed/data/repositories/rss_feed_repository_impl.dart';
+import 'package:money_saver_deals/features/rss_feed/presentation/providers/rss_feed_provider.dart';
 
 /// Get the appropriate API base URL based on the platform
 String getApiBaseUrl() {
@@ -80,11 +83,19 @@ void main() {
       final dealsRepository = DealsRepositoryImpl(apiClient: apiClient);
       final notificationsRepository = NotificationsRepositoryImpl(apiClient: apiClient);
 
+      // RSS Feed API client and repository
+      final rssFeedApiClient = RssFeedApiClient(
+        dio: Dio(),
+        baseUrl: baseUrl,
+      );
+      final rssFeedRepository = RssFeedRepositoryImpl(apiClient: rssFeedApiClient);
+
       runApp(
         ProviderScope(
           overrides: [
             dealsRepositoryProvider.overrideWithValue(dealsRepository),
             notificationsRepositoryProvider.overrideWithValue(notificationsRepository),
+            rssFeedRepositoryProvider.overrideWithValue(rssFeedRepository),
           ],
           child: const MoneySaverDealsApp(),
         ),

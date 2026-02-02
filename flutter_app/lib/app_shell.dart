@@ -6,6 +6,7 @@ import 'package:money_saver_deals/features/deals/presentation/pages/home_feed_pa
 import 'package:money_saver_deals/features/flip/presentation/pages/flip_feed_page.dart';
 import 'package:money_saver_deals/features/saved/presentation/pages/saved_deals_page.dart';
 import 'package:money_saver_deals/features/profile/presentation/pages/profile_page.dart';
+import 'package:money_saver_deals/features/rss_feed/presentation/pages/rss_feed_page.dart';
 
 /// Tab provider to manage which tab is currently selected
 final selectedTabProvider = StateProvider<int>((ref) => 0);
@@ -20,6 +21,7 @@ final selectedDealForFlipProvider = StateProvider<Deal?>((ref) => null);
 /// Provides the main navigation structure for the app with 4 main tabs:
 /// - Feed (Deals grid/list)
 /// - Flip (TikTok-style deal cards)
+/// - RSS Feed (Deals from multiple sources)
 /// - Saved (Wishlist)
 /// - Profile (User account)
 class AppShell extends ConsumerWidget {
@@ -35,6 +37,7 @@ class AppShell extends ConsumerWidget {
         children: const [
           HomeFeedPage(),
           FlipFeedPage(),
+          RssFeedPage(),
           SavedDealsPage(),
           ProfilePage(),
         ],
@@ -75,18 +78,25 @@ class AppShell extends ConsumerWidget {
                 onTap: () => ref.read(selectedTabProvider.notifier).state = 1,
               ),
               _NavItem(
+                icon: Icons.rss_feed_outlined,
+                selectedIcon: Icons.rss_feed_rounded,
+                label: 'Deals',
+                isSelected: selectedTab == 2,
+                onTap: () => ref.read(selectedTabProvider.notifier).state = 2,
+              ),
+              _NavItem(
                 icon: Icons.bookmark_outline_rounded,
                 selectedIcon: Icons.bookmark_rounded,
                 label: 'Saved',
-                isSelected: selectedTab == 2,
-                onTap: () => ref.read(selectedTabProvider.notifier).state = 2,
+                isSelected: selectedTab == 3,
+                onTap: () => ref.read(selectedTabProvider.notifier).state = 3,
               ),
               _NavItem(
                 icon: Icons.person_outline_rounded,
                 selectedIcon: Icons.person_rounded,
                 label: 'Profile',
-                isSelected: selectedTab == 3,
-                onTap: () => ref.read(selectedTabProvider.notifier).state = 3,
+                isSelected: selectedTab == 4,
+                onTap: () => ref.read(selectedTabProvider.notifier).state = 4,
               ),
             ],
           ),
