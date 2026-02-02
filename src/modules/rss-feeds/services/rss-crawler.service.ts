@@ -62,39 +62,62 @@ export class RssCrawlerService {
   }
 
   /**
-   * Fetch and parse RSS feed from a source URL
+   * Fetch and parse RSS feed from a source URL with retry logic
    */
-  async fetchFeed(source: RssFeedSource): Promise<ParsedRssItem[]> {
+  async fetchFeed(source: RssFeedSource, maxRetries: number = 3): Promise<ParsedRssItem[]> {
     this.logger.log(`Fetching RSS feed: ${source.name} - url: ${source.url}`, this.context);
 
-    try {
-      const feed = await this.parser.parseURL(source.url);
-      const items: ParsedRssItem[] = [];
+    let lastError: Error | null = null;
 
-      for (const item of feed.items || []) {
-        try {
-          const parsedItem = this.parseItem(item, source);
-          if (parsedItem) {
-            items.push(parsedItem);
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const feed = await this.parser.parseURL(source.url);
+        const items: ParsedRssItem[] = [];
+
+        for (const item of feed.items || []) {
+          try {
+            const parsedItem = this.parseItem(item, source);
+            if (parsedItem) {
+              items.push(parsedItem);
+            }
+          } catch (parseError) {
+            this.logger.warn(
+              `Failed to parse item in feed ${source.name}: ${parseError.message} - title: ${item.title}`,
+              this.context,
+            );
           }
-        } catch (parseError) {
-          this.logger.warn(
-            `Failed to parse item in feed ${source.name}: ${parseError.message} - title: ${item.title}`,
-            this.context,
-          );
+        }
+
+        this.logger.log(`Successfully parsed ${items.length} items from ${source.name}`, this.context);
+        return items;
+      } catch (error) {
+        lastError = error;
+        this.logger.warn(
+          `Attempt ${attempt}/${maxRetries} failed for ${source.name}: ${error.message}`,
+          this.context,
+        );
+
+        if (attempt < maxRetries) {
+          // Exponential backoff: 2s, 4s, 8s
+          const delay = Math.pow(2, attempt) * 1000;
+          await this.sleep(delay);
         }
       }
-
-      this.logger.log(`Successfully parsed ${items.length} items from ${source.name}`, this.context);
-      return items;
-    } catch (error) {
-      this.logger.error(
-        `Failed to fetch feed ${source.name}: ${error.message}`,
-        error.stack,
-        this.context,
-      );
-      throw error;
     }
+
+    this.logger.error(
+      `Failed to fetch feed ${source.name} after ${maxRetries} attempts: ${lastError?.message}`,
+      lastError?.stack,
+      this.context,
+    );
+    throw lastError;
+  }
+
+  /**
+   * Sleep helper for retry backoff
+   */
+  private sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   /**

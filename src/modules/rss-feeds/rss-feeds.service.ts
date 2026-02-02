@@ -14,6 +14,7 @@ import {
 import { RssCrawlerService, ParsedRssItem, CrawlResult } from './services/rss-crawler.service';
 import { CreateRssFeedSourceDto } from './dto/create-rss-feed-source.dto';
 import { UpdateRssFeedSourceDto } from './dto/update-rss-feed-source.dto';
+import { RssDealsSeedService } from './seeds/rss-deals.seed';
 
 /**
  * RssFeedsService - Business logic for RSS feed management
@@ -33,12 +34,14 @@ export class RssFeedsService implements OnModuleInit {
     @Inject(RSS_FEEDS_REPOSITORY)
     private readonly repository: IRssFeedsRepository,
     private readonly crawler: RssCrawlerService,
+    private readonly dealsSeedService: RssDealsSeedService,
     private readonly logger: LoggerService,
   ) {}
 
   /**
    * Trigger initial crawl after module initialization
    * Waits a short delay to ensure seed data is loaded
+   * If crawling fails or returns no results, seeds sample deals
    */
   async onModuleInit(): Promise<void> {
     // Delay initial crawl by 10 seconds to ensure database is ready and seeds are loaded
@@ -46,14 +49,44 @@ export class RssFeedsService implements OnModuleInit {
       if (!this.isInitialCrawlDone) {
         this.logger.log('Starting initial RSS feed crawl on startup...', this.context);
         try {
-          await this.crawlAllSources();
+          const results = await this.crawlAllSources();
           this.isInitialCrawlDone = true;
-          this.logger.log('Initial RSS feed crawl completed', this.context);
+
+          // Check if any deals were successfully crawled
+          const totalNewDeals = results.reduce((sum, r) => sum + r.newItems, 0);
+          const successfulCrawls = results.filter(r => r.success).length;
+
+          this.logger.log(
+            `Initial crawl completed - sources: ${results.length}, successful: ${successfulCrawls}, new deals: ${totalNewDeals}`,
+            this.context,
+          );
+
+          // If no deals were crawled (e.g., network issues), seed sample deals
+          if (totalNewDeals === 0) {
+            this.logger.log('No deals crawled, seeding sample deals for demonstration...', this.context);
+            await this.seedSampleDealsIfNeeded();
+          }
         } catch (error) {
           this.logger.error(`Initial crawl failed: ${error.message}`, error.stack, this.context);
+          // Seed sample deals as fallback
+          await this.seedSampleDealsIfNeeded();
         }
       }
     }, 10000);
+  }
+
+  /**
+   * Seeds sample deals if no deals exist in the database
+   */
+  private async seedSampleDealsIfNeeded(): Promise<void> {
+    try {
+      const seededCount = await this.dealsSeedService.seedSampleDeals();
+      if (seededCount > 0) {
+        this.logger.log(`Seeded ${seededCount} sample RSS deals`, this.context);
+      }
+    } catch (error) {
+      this.logger.error(`Failed to seed sample deals: ${error.message}`, error.stack, this.context);
+    }
   }
 
   // =====================
