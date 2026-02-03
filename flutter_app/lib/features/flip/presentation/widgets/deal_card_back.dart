@@ -49,13 +49,36 @@ class DealCardBack extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Best For badge (if available)
+                    if (deal.bestFor != null && deal.bestFor!.isNotEmpty)
+                      _buildBestForBadge(),
+
+                    if (deal.bestFor != null && deal.bestFor!.isNotEmpty)
+                      const SizedBox(height: 16),
+
                     // Price trend section
                     _buildPriceTrendSection(),
 
                     const SizedBox(height: 16),
 
-                    // Should you wait section
-                    _buildShouldWaitSection(),
+                    // Pros and Cons section
+                    if (deal.pros.isNotEmpty || deal.cons.isNotEmpty)
+                      _buildProsConsSection(),
+
+                    if (deal.pros.isNotEmpty || deal.cons.isNotEmpty)
+                      const SizedBox(height: 16),
+
+                    // Original Analysis section (enhanced)
+                    if (deal.originalAnalysis != null &&
+                        deal.originalAnalysis!.isNotEmpty)
+                      _buildOriginalAnalysisSection(),
+
+                    if (deal.originalAnalysis != null &&
+                        deal.originalAnalysis!.isNotEmpty)
+                      const SizedBox(height: 16),
+
+                    // Should you wait / When to buy section
+                    _buildWhenToBuySection(),
 
                     const SizedBox(height: 16),
 
@@ -63,10 +86,16 @@ class DealCardBack extends StatelessWidget {
                     if (deal.couponCode != null && deal.couponCode!.isNotEmpty)
                       _buildCouponSection(context),
 
-                    const SizedBox(height: 16),
+                    if (deal.couponCode != null && deal.couponCode!.isNotEmpty)
+                      const SizedBox(height: 16),
 
                     // Product details/bullet points
                     _buildDetailsSection(),
+
+                    const SizedBox(height: 16),
+
+                    // Affiliate disclosure footer
+                    _buildAffiliateDisclosureFooter(),
 
                     const SizedBox(height: 20),
                   ],
@@ -230,8 +259,197 @@ class DealCardBack extends StatelessWidget {
     );
   }
 
-  Widget _buildShouldWaitSection() {
-    final analysis = deal.shouldYouWaitAnalysis ?? 'This is a good price. Best deal this month!';
+  /// Build "Best For" badge showing target audience
+  Widget _buildBestForBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.purple[50]!, Colors.purple[100]!],
+        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.purple[200]!),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.person_outline, color: Colors.purple[700], size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Best For',
+                  style: TextStyle(
+                    color: Colors.purple[700],
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  deal.bestFor!,
+                  style: TextStyle(
+                    color: Colors.purple[900],
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Build Pros and Cons section with green checkmarks and red X marks
+  Widget _buildProsConsSection() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Pros
+          if (deal.pros.isNotEmpty) ...[
+            Row(
+              children: [
+                Icon(Icons.thumb_up_outlined, color: Colors.green[700], size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  'Pros',
+                  style: TextStyle(
+                    color: Colors.green[700],
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            ...deal.pros.map((pro) => Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.check_circle, color: Colors.green[600], size: 16),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          pro,
+                          style: TextStyle(
+                            color: Colors.grey[800],
+                            fontSize: 13,
+                            height: 1.3,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )),
+          ],
+
+          // Divider between pros and cons
+          if (deal.pros.isNotEmpty && deal.cons.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Divider(color: Colors.grey[300], height: 1),
+            ),
+
+          // Cons
+          if (deal.cons.isNotEmpty) ...[
+            Row(
+              children: [
+                Icon(Icons.thumb_down_outlined, color: Colors.red[700], size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  'Cons',
+                  style: TextStyle(
+                    color: Colors.red[700],
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            ...deal.cons.map((con) => Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.cancel, color: Colors.red[600], size: 16),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          con,
+                          style: TextStyle(
+                            color: Colors.grey[800],
+                            fontSize: 13,
+                            height: 1.3,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// Build Original Analysis section (enhanced "Our Analysis")
+  Widget _buildOriginalAnalysisSection() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.amber[50],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.amber[200]!),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.analytics_outlined, color: Colors.amber[800], size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Our Analysis',
+                style: TextStyle(
+                  color: Colors.amber[800],
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            deal.originalAnalysis!,
+            style: TextStyle(
+              color: Colors.grey[800],
+              fontSize: 14,
+              height: 1.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Build When to Buy / Should You Wait section
+  Widget _buildWhenToBuySection() {
+    // Use whenToBuy if available, otherwise fall back to shouldYouWaitAnalysis
+    final analysis = deal.whenToBuy ??
+        deal.shouldYouWaitAnalysis ??
+        'This is a good price. Best deal this month!';
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -245,10 +463,10 @@ class DealCardBack extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.lightbulb_outline, color: Colors.blue[700], size: 20),
+              Icon(Icons.access_time, color: Colors.blue[700], size: 20),
               const SizedBox(width: 8),
               Text(
-                'Should You Wait?',
+                deal.whenToBuy != null ? 'When to Buy' : 'Should You Wait?',
                 style: TextStyle(
                   color: Colors.blue[700],
                   fontWeight: FontWeight.w600,
@@ -264,6 +482,33 @@ class DealCardBack extends StatelessWidget {
               color: Colors.grey[800],
               fontSize: 14,
               height: 1.4,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Build affiliate disclosure footer
+  Widget _buildAffiliateDisclosureFooter() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.info_outline, color: Colors.grey[500], size: 16),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'We may earn a commission from purchases. Prices are the same for you.',
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontSize: 11,
+                fontStyle: FontStyle.italic,
+              ),
             ),
           ),
         ],

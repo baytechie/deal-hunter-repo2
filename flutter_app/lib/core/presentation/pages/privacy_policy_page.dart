@@ -179,13 +179,29 @@ If we are involved in a merger, acquisition, or sale of assets, your information
                   ),
                   _buildSection(
                     '5. Affiliate Links and Third-Party Services',
-                    '''Our Service contains affiliate links to third-party retailers including:
-• Amazon Associates Program
+                    '''Our Service contains affiliate links to third-party retailers. When you make a purchase through our links, we may earn a commission at no additional cost to you.
+
+Our Affiliate Partners Include:
+• Amazon Associates Program - As an Amazon Associate, Deal Hunt earns from qualifying purchases
 • Walmart Affiliate Program
 • Target Affiliate Program
+• Best Buy Affiliate Program
 • Other retail partners
 
-When you click on these links, you will be directed to third-party websites that have their own privacy policies. We are not responsible for the privacy practices of these external sites. We encourage you to review their privacy policies before providing any personal information.''',
+How Affiliate Links Work:
+• When you click a deal link, you may be directed through an affiliate link
+• We earn a small commission if you make a qualifying purchase
+• The price you pay is exactly the same as if you visited the retailer directly
+• This revenue helps us keep the app free and maintain our service
+
+Editorial Independence:
+Our deal recommendations, analysis, and "BUY NOW", "WAIT", or "PASS" verdicts are based solely on value to you. We do not let affiliate relationships influence which deals we feature or our editorial opinions. We feature deals from any retailer, regardless of affiliate status.
+
+FTC Compliance:
+This disclosure is made in accordance with the Federal Trade Commission's guidelines on endorsements and testimonials (16 CFR Part 255). We are committed to transparency about our affiliate relationships.
+
+Third-Party Websites:
+When you click on affiliate links, you will be directed to third-party websites that have their own privacy policies. We are not responsible for the privacy practices of these external sites. We encourage you to review their privacy policies before providing any personal information.''',
                   ),
                   _buildSection(
                     '6. Data Security',

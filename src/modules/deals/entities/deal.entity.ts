@@ -94,6 +94,31 @@ export class Deal {
   @Column({ type: 'boolean', default: false })
   isCouponAvailable: boolean; // Flag indicating clippable coupon exists on Amazon
 
+  // Amazon Associates Compliance Fields - Editorial Analysis
+  @Column({ type: 'text', nullable: true })
+  originalAnalysis: string | null; // 50-150 word original analysis of the deal
+
+  @Column({ type: 'simple-array', nullable: true })
+  pros: string[] | null; // Array of advantages/benefits
+
+  @Column({ type: 'simple-array', nullable: true })
+  cons: string[] | null; // Array of disadvantages/limitations
+
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  expertVerdict: string | null; // "BUY NOW", "WAIT", "PASS"
+
+  @Column({ type: 'text', nullable: true })
+  whenToBuy: string | null; // Timing recommendation for purchase
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  bestFor: string | null; // Target audience description
+
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  retailer: string | null; // AMAZON, WALMART, TARGET, etc.
+
+  @Column({ type: 'text', nullable: true })
+  priceHistoryJson: string | null; // JSON string of price history data
+
   @CreateDateColumn()
   createdAt: Date;
 

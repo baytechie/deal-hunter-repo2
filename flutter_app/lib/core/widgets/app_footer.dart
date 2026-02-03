@@ -292,26 +292,29 @@ Questions: hunter4dealsapp@gmail.com
 const String _affiliateDisclosureText = '''
 Affiliate Disclosure
 
-Deal Hunt participates in affiliate marketing programs, which means we may earn commissions on purchases made through links in our app.
+Deal Hunt participates in affiliate marketing programs, which means we may earn commissions on qualifying purchases made through links in our app.
 
 Our Affiliate Partners Include:
-• Amazon Associates Program
+• Amazon Associates Program - As an Amazon Associate, Deal Hunt earns from qualifying purchases
 • Walmart Affiliate Program
 • Target Affiliate Program
+• Best Buy Affiliate Program
 • And other retail partners
 
 What This Means For You:
-- Clicking on deals may direct you through affiliate links
+- When you click on deals in our app, you may be directed through affiliate links
 - We earn a small commission at no extra cost to you
-- This helps support our free service
+- The price you pay is exactly the same as if you went directly to the retailer
+- This revenue helps us keep the app free and continue providing deal analysis
 
-Our Commitment:
-- We never let affiliate relationships influence our deal recommendations
-- We showcase deals based on value to our users
-- Prices shown are the same whether you use our links or not
+Editorial Independence:
+- Our deal recommendations, pros/cons, and verdicts ("BUY NOW", "WAIT", "PASS") are based solely on value to you
+- We never let affiliate commission rates influence which deals we feature
+- We showcase deals from any retailer based on genuine value, regardless of affiliate status
+- Our original analysis and recommendations reflect honest product research
 
 FTC Compliance:
-This disclosure is provided in accordance with the Federal Trade Commission's guidelines on affiliate marketing.
+This disclosure is provided in accordance with the Federal Trade Commission's guidelines on endorsements and testimonials (16 CFR Part 255). We are committed to full transparency about our affiliate relationships.
 
 Questions about our affiliate relationships? Contact us at hunter4dealsapp@gmail.com
 ''';

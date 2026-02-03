@@ -82,11 +82,18 @@ class DealCard extends ConsumerWidget {
                             child: _buildHotBadge(isCompact),
                           ),
 
-                        // Retailer Badge (Bottom Left)
+                        // Retailer Badge (Bottom Left) with Info Icon
                         Positioned(
                           bottom: 6,
                           left: 6,
-                          child: _buildRetailerBadge(isCompact),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _buildRetailerBadge(isCompact),
+                              const SizedBox(width: 4),
+                              _buildAffiliateInfoIcon(context, isCompact),
+                            ],
+                          ),
                         ),
 
                         // Verdict Badge (Bottom Right)
@@ -978,5 +985,63 @@ class DealCard extends ConsumerWidget {
     ref.read(selectedDealForFlipProvider.notifier).state = deal;
     // Navigate to Flip tab (index 1)
     ref.read(selectedTabProvider.notifier).state = 1;
+  }
+
+  /// Build affiliate info icon that shows disclosure snackbar on tap
+  Widget _buildAffiliateInfoIcon(BuildContext context, [bool isCompact = false]) {
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.info_outline, color: Colors.white, size: 18),
+                const SizedBox(width: 10),
+                const Expanded(
+                  child: Text(
+                    'We may earn a commission if you purchase through our link. Price is the same for you.',
+                    style: TextStyle(fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
+            duration: const Duration(seconds: 4),
+            backgroundColor: AppColors.textPrimary,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.md),
+            ),
+            action: SnackBarAction(
+              label: 'Learn More',
+              textColor: AppColors.primaryLight,
+              onPressed: () {
+                // Navigate to about page would be ideal, but keeping it simple
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+              },
+            ),
+          ),
+        );
+      },
+      child: Container(
+        padding: EdgeInsets.all(isCompact ? 4 : 5),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.9),
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 4,
+              offset: const Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Icon(
+          Icons.info_outline,
+          size: isCompact ? 10 : 12,
+          color: AppColors.textMuted,
+        ),
+      ),
+    );
   }
 }

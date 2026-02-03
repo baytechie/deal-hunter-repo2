@@ -1,4 +1,4 @@
-import 'package:money_saver_deals/core/utils/result.dart';
+import 'package:money_saver_deals/features/deals/domain/core/result.dart';
 import 'package:money_saver_deals/features/rss_feed/domain/entities/rss_feed_deal.dart';
 
 /// Filter type for RSS feed deals

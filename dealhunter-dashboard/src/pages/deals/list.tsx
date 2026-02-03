@@ -44,6 +44,12 @@ const CATEGORIES = [
   "Other",
 ];
 
+// Expert verdict options for Amazon Associates compliance
+const EXPERT_VERDICTS = ["BUY NOW", "WAIT", "PASS"];
+
+// Retailer options
+const RETAILERS = ["AMAZON", "WALMART", "TARGET", "BESTBUY", "EBAY", "COSTCO", "OTHER"];
+
 interface Deal {
   id: string;
   title: string;
@@ -59,6 +65,15 @@ interface Deal {
   category: string;
   couponCode?: string;
   promoDescription?: string;
+  // Amazon Associates Compliance Fields
+  originalAnalysis?: string;
+  pros?: string[];
+  cons?: string[];
+  expertVerdict?: string;
+  whenToBuy?: string;
+  bestFor?: string;
+  retailer?: string;
+  priceHistoryJson?: string;
 }
 
 export const DealList = () => {
@@ -95,11 +110,14 @@ export const DealList = () => {
   const handleEdit = (record: Deal) => {
     setEditingDeal(record);
     // Convert string prices to numbers for form validation
+    // Convert arrays to comma-separated strings for form display
     form.setFieldsValue({
       ...record,
       price: parseFloat(String(record.price)) || 0,
       originalPrice: parseFloat(String(record.originalPrice)) || 0,
       expiryDate: record.expiryDate ? dayjs(record.expiryDate) : null,
+      pros: Array.isArray(record.pros) ? record.pros.join(", ") : record.pros || "",
+      cons: Array.isArray(record.cons) ? record.cons.join(", ") : record.cons || "",
     });
     setEditModalVisible(true);
   };
@@ -108,9 +126,20 @@ export const DealList = () => {
     if (!editingDeal) return;
 
     setIsUpdating(true);
+
+    // Convert comma-separated strings to arrays for pros/cons
+    const prosArray = values.pros
+      ? String(values.pros).split(",").map((s: string) => s.trim()).filter((s: string) => s)
+      : [];
+    const consArray = values.cons
+      ? String(values.cons).split(",").map((s: string) => s.trim()).filter((s: string) => s)
+      : [];
+
     const updateData = {
       ...values,
       expiryDate: values.expiryDate?.toISOString(),
+      pros: prosArray,
+      cons: consArray,
     };
 
     updateDeal(
@@ -370,6 +399,98 @@ export const DealList = () => {
 
           <Form.Item name="promoDescription" label="Promo Description">
             <Input.TextArea rows={2} />
+          </Form.Item>
+
+          {/* Amazon Associates Compliance Fields */}
+          <Typography.Title level={5} style={{ marginTop: 16, marginBottom: 8 }}>
+            Editorial Analysis (Amazon Associates Compliance)
+          </Typography.Title>
+
+          <Form.Item
+            name="originalAnalysis"
+            label="Original Analysis"
+            tooltip="50-150 word original analysis of this deal"
+          >
+            <Input.TextArea
+              rows={3}
+              placeholder="Write original analysis explaining why this is a good/bad deal..."
+              maxLength={1000}
+              showCount
+            />
+          </Form.Item>
+
+          <Space style={{ display: "flex", width: "100%" }} align="start">
+            <Form.Item
+              name="expertVerdict"
+              label="Expert Verdict"
+              style={{ width: 150 }}
+            >
+              <Select allowClear placeholder="Select verdict">
+                {EXPERT_VERDICTS.map((verdict) => (
+                  <Select.Option key={verdict} value={verdict}>
+                    {verdict}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              name="retailer"
+              label="Retailer"
+              style={{ width: 150 }}
+            >
+              <Select allowClear placeholder="Select retailer">
+                {RETAILERS.map((retailer) => (
+                  <Select.Option key={retailer} value={retailer}>
+                    {retailer}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </Space>
+
+          <Form.Item
+            name="pros"
+            label="Pros (comma-separated)"
+            tooltip="List advantages, separated by commas"
+          >
+            <Input.TextArea
+              rows={2}
+              placeholder="Great price, Fast shipping, High quality..."
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="cons"
+            label="Cons (comma-separated)"
+            tooltip="List disadvantages, separated by commas"
+          >
+            <Input.TextArea
+              rows={2}
+              placeholder="Limited colors, No warranty, Slow delivery..."
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="whenToBuy"
+            label="When to Buy"
+            tooltip="Timing recommendation for this purchase"
+          >
+            <Input.TextArea
+              rows={2}
+              placeholder="Buy now - this is the lowest price we've seen in 30 days..."
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="bestFor"
+            label="Best For"
+            tooltip="Target audience for this deal"
+          >
+            <Input
+              placeholder="Budget shoppers, Tech enthusiasts, Parents..."
+              maxLength={255}
+            />
           </Form.Item>
 
           <Space>

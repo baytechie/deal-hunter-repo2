@@ -65,6 +65,14 @@ class DealModel extends Deal {
     super.bulletPoints,
     super.likes,
     super.comments,
+    // Amazon Associates Compliance Fields
+    super.originalAnalysis,
+    super.pros,
+    super.cons,
+    super.expertVerdict,
+    super.whenToBuy,
+    super.bestFor,
+    super.priceHistoryJson,
   });
 
   /// Factory constructor to create DealModel from JSON
@@ -89,6 +97,40 @@ class DealModel extends Deal {
     if (json['priceTrend'] != null) {
       priceTrendModel =
           PriceTrendModel.fromJson(json['priceTrend'] as Map<String, dynamic>);
+    }
+
+    // Parse pros array
+    List<String> parsedPros = [];
+    if (json['pros'] != null) {
+      if (json['pros'] is List) {
+        parsedPros = (json['pros'] as List<dynamic>)
+            .map((e) => e.toString())
+            .toList();
+      } else if (json['pros'] is String) {
+        // Handle comma-separated string from simple-array TypeORM column
+        parsedPros = (json['pros'] as String)
+            .split(',')
+            .map((e) => e.trim())
+            .where((e) => e.isNotEmpty)
+            .toList();
+      }
+    }
+
+    // Parse cons array
+    List<String> parsedCons = [];
+    if (json['cons'] != null) {
+      if (json['cons'] is List) {
+        parsedCons = (json['cons'] as List<dynamic>)
+            .map((e) => e.toString())
+            .toList();
+      } else if (json['cons'] is String) {
+        // Handle comma-separated string from simple-array TypeORM column
+        parsedCons = (json['cons'] as String)
+            .split(',')
+            .map((e) => e.trim())
+            .where((e) => e.isNotEmpty)
+            .toList();
+      }
     }
 
     return DealModel(
@@ -118,6 +160,14 @@ class DealModel extends Deal {
       bulletPoints: parsedBulletPoints,
       likes: json['likes'] as int? ?? 0,
       comments: json['comments'] as int? ?? 0,
+      // Amazon Associates Compliance Fields
+      originalAnalysis: json['originalAnalysis'] as String?,
+      pros: parsedPros,
+      cons: parsedCons,
+      expertVerdict: json['expertVerdict'] as String?,
+      whenToBuy: json['whenToBuy'] as String?,
+      bestFor: json['bestFor'] as String?,
+      priceHistoryJson: json['priceHistoryJson'] as String?,
     );
   }
 
@@ -180,6 +230,14 @@ class DealModel extends Deal {
       'bulletPoints': bulletPoints,
       'likes': likes,
       'comments': comments,
+      // Amazon Associates Compliance Fields
+      'originalAnalysis': originalAnalysis,
+      'pros': pros,
+      'cons': cons,
+      'expertVerdict': expertVerdict,
+      'whenToBuy': whenToBuy,
+      'bestFor': bestFor,
+      'priceHistoryJson': priceHistoryJson,
     };
   }
 
@@ -210,5 +268,12 @@ class DealModel extends Deal {
         bulletPoints: bulletPoints,
         likes: likes,
         comments: comments,
+        originalAnalysis: originalAnalysis,
+        pros: pros,
+        cons: cons,
+        expertVerdict: expertVerdict,
+        whenToBuy: whenToBuy,
+        bestFor: bestFor,
+        priceHistoryJson: priceHistoryJson,
       );
 }

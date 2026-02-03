@@ -54,6 +54,12 @@ const CATEGORIES = [
   "Other",
 ];
 
+// Expert verdict options for Amazon Associates compliance
+const EXPERT_VERDICTS = ["BUY NOW", "WAIT", "PASS"];
+
+// Retailer options
+const RETAILERS = ["AMAZON", "WALMART", "TARGET", "BESTBUY", "EBAY", "COSTCO", "OTHER"];
+
 interface DealFormValues {
   title: string;
   description?: string;
@@ -67,6 +73,14 @@ interface DealFormValues {
   category: string;
   couponCode?: string;
   promoDescription?: string;
+  // Amazon Associates Compliance Fields
+  originalAnalysis?: string;
+  pros?: string;
+  cons?: string;
+  expertVerdict?: string;
+  whenToBuy?: string;
+  bestFor?: string;
+  retailer?: string;
 }
 
 export const ManualDealCreate = () => {
@@ -138,6 +152,14 @@ export const ManualDealCreate = () => {
   const handleSubmit = async (values: DealFormValues) => {
     setIsLoading(true);
 
+    // Convert comma-separated strings to arrays for pros/cons
+    const prosArray = values.pros
+      ? String(values.pros).split(",").map((s: string) => s.trim()).filter((s: string) => s)
+      : [];
+    const consArray = values.cons
+      ? String(values.cons).split(",").map((s: string) => s.trim()).filter((s: string) => s)
+      : [];
+
     // Transform form values to API format
     const dealData = {
       title: values.title,
@@ -152,6 +174,14 @@ export const ManualDealCreate = () => {
       category: values.category,
       couponCode: values.couponCode,
       promoDescription: values.promoDescription,
+      // Amazon Associates Compliance Fields
+      originalAnalysis: values.originalAnalysis,
+      pros: prosArray,
+      cons: consArray,
+      expertVerdict: values.expertVerdict,
+      whenToBuy: values.whenToBuy,
+      bestFor: values.bestFor,
+      retailer: values.retailer,
     };
 
     createDeal(
@@ -476,6 +506,99 @@ Expires: 2/28/2025`}
                   <TextArea
                     rows={2}
                     placeholder="Additional promotion details (optional)"
+                  />
+                </Form.Item>
+
+                {/* Amazon Associates Compliance Fields */}
+                <Divider orientation="left">
+                  <Text strong>Editorial Analysis (Amazon Associates Compliance)</Text>
+                </Divider>
+
+                <Form.Item
+                  name="originalAnalysis"
+                  label="Original Analysis"
+                  tooltip="50-150 word original analysis of this deal"
+                >
+                  <TextArea
+                    rows={3}
+                    placeholder="Write original analysis explaining why this is a good/bad deal..."
+                    maxLength={1000}
+                    showCount
+                  />
+                </Form.Item>
+
+                <Row gutter={16}>
+                  <Col span={12}>
+                    <Form.Item
+                      name="expertVerdict"
+                      label="Expert Verdict"
+                    >
+                      <Select allowClear placeholder="Select verdict">
+                        {EXPERT_VERDICTS.map((verdict) => (
+                          <Select.Option key={verdict} value={verdict}>
+                            {verdict}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item
+                      name="retailer"
+                      label="Retailer"
+                    >
+                      <Select allowClear placeholder="Select retailer">
+                        {RETAILERS.map((retailer) => (
+                          <Select.Option key={retailer} value={retailer}>
+                            {retailer}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                </Row>
+
+                <Form.Item
+                  name="pros"
+                  label="Pros (comma-separated)"
+                  tooltip="List advantages, separated by commas"
+                >
+                  <TextArea
+                    rows={2}
+                    placeholder="Great price, Fast shipping, High quality..."
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  name="cons"
+                  label="Cons (comma-separated)"
+                  tooltip="List disadvantages, separated by commas"
+                >
+                  <TextArea
+                    rows={2}
+                    placeholder="Limited colors, No warranty, Slow delivery..."
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  name="whenToBuy"
+                  label="When to Buy"
+                  tooltip="Timing recommendation for this purchase"
+                >
+                  <TextArea
+                    rows={2}
+                    placeholder="Buy now - this is the lowest price we've seen in 30 days..."
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  name="bestFor"
+                  label="Best For"
+                  tooltip="Target audience for this deal"
+                >
+                  <Input
+                    placeholder="Budget shoppers, Tech enthusiasts, Parents..."
+                    maxLength={255}
                   />
                 </Form.Item>
 

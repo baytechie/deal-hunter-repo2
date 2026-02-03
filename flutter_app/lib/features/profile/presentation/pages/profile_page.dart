@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:money_saver_deals/core/presentation/pages/about_page.dart';
+import 'package:money_saver_deals/core/presentation/pages/privacy_policy_page.dart';
 import 'package:money_saver_deals/core/theme/app_theme.dart';
 import 'package:money_saver_deals/core/widgets/app_footer.dart';
 import 'package:money_saver_deals/core/widgets/app_header.dart';
@@ -150,6 +152,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 ],
               ),
             ),
+
+            const SizedBox(height: 24),
+
+            // About Deal Hunt Section
+            _buildAboutSection(context),
 
             const SizedBox(height: 24),
 
@@ -548,6 +555,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               ],
             ),
 
+            const SizedBox(height: 24),
+
+            // About Deal Hunt Section (for non-authenticated users)
+            _buildAboutSection(context),
+
             const SizedBox(height: 40),
             const AppFooter(),
           ],
@@ -703,5 +715,186 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   String? _formatDate(DateTime? date) {
     if (date == null) return null;
     return '${date.month}/${date.day}/${date.year}';
+  }
+
+  /// Build About Deal Hunt section with affiliate disclosure
+  Widget _buildAboutSection(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primarySurface,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.info_outline,
+                  color: AppColors.primary,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'About Deal Hunt',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // How We Make Money - Expandable
+          Theme(
+            data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+            child: ExpansionTile(
+              tilePadding: EdgeInsets.zero,
+              childrenPadding: const EdgeInsets.only(bottom: 12),
+              title: Row(
+                children: [
+                  Icon(Icons.monetization_on_outlined,
+                      color: Colors.green[600], size: 20),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'How We Make Money',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.green[50],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Deal Hunt earns commissions from qualifying purchases made through our affiliate links. This helps us keep the app free!',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey[800],
+                          height: 1.4,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      _buildDisclosurePoint(
+                        'We never let commissions influence our recommendations',
+                        Icons.check_circle,
+                        Colors.green,
+                      ),
+                      const SizedBox(height: 6),
+                      _buildDisclosurePoint(
+                        'Prices are the same whether you use our links or not',
+                        Icons.check_circle,
+                        Colors.green,
+                      ),
+                      const SizedBox(height: 6),
+                      _buildDisclosurePoint(
+                        'Our analysis and verdicts are editorially independent',
+                        Icons.check_circle,
+                        Colors.green,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const Divider(height: 24),
+
+          // Quick Links
+          _buildQuickLink(
+            context,
+            icon: Icons.description_outlined,
+            label: 'Privacy Policy',
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const PrivacyPolicyPage()),
+            ),
+          ),
+          const SizedBox(height: 8),
+          _buildQuickLink(
+            context,
+            icon: Icons.info_outline,
+            label: 'About & Full Disclosure',
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const AboutPage()),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Build a disclosure point with icon
+  Widget _buildDisclosurePoint(String text, IconData icon, Color color) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, color: color, size: 16),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey[700],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Build a quick link row
+  Widget _buildQuickLink(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+        child: Row(
+          children: [
+            Icon(icon, color: Colors.grey[600], size: 20),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[700],
+                ),
+              ),
+            ),
+            Icon(Icons.chevron_right, color: Colors.grey[400], size: 20),
+          ],
+        ),
+      ),
+    );
   }
 }

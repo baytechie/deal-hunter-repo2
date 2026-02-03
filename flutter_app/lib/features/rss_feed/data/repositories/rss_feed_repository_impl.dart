@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:money_saver_deals/core/utils/result.dart';
+import 'package:money_saver_deals/features/deals/domain/core/result.dart';
 import 'package:money_saver_deals/features/rss_feed/data/datasources/rss_feed_api_client.dart';
 import 'package:money_saver_deals/features/rss_feed/domain/entities/rss_feed_deal.dart';
 import 'package:money_saver_deals/features/rss_feed/domain/repositories/rss_feed_repository.dart';
@@ -38,11 +38,11 @@ class RssFeedRepositoryImpl implements RssFeedRepository {
         sortField: sortField,
         sortOrder: sortOrder,
       );
-      return Result.success(models.map((m) => m.toDomain()).toList());
+      return Success(models.map((m) => m.toDomain()).toList());
     } on DioException catch (e) {
-      return Result.failure(_mapDioError(e));
+      return Failure(_mapDioError(e));
     } catch (e) {
-      return Result.failure('An unexpected error occurred: $e');
+      return Failure('An unexpected error occurred: $e');
     }
   }
 
@@ -50,11 +50,11 @@ class RssFeedRepositoryImpl implements RssFeedRepository {
   Future<Result<List<RssFeedDeal>>> getHotDeals({int limit = 10}) async {
     try {
       final models = await apiClient.getHotDeals(limit: limit);
-      return Result.success(models.map((m) => m.toDomain()).toList());
+      return Success(models.map((m) => m.toDomain()).toList());
     } on DioException catch (e) {
-      return Result.failure(_mapDioError(e));
+      return Failure(_mapDioError(e));
     } catch (e) {
-      return Result.failure('An unexpected error occurred: $e');
+      return Failure('An unexpected error occurred: $e');
     }
   }
 
@@ -62,11 +62,11 @@ class RssFeedRepositoryImpl implements RssFeedRepository {
   Future<Result<List<RssFeedDeal>>> getFeaturedDeals({int limit = 10}) async {
     try {
       final models = await apiClient.getFeaturedDeals(limit: limit);
-      return Result.success(models.map((m) => m.toDomain()).toList());
+      return Success(models.map((m) => m.toDomain()).toList());
     } on DioException catch (e) {
-      return Result.failure(_mapDioError(e));
+      return Failure(_mapDioError(e));
     } catch (e) {
-      return Result.failure('An unexpected error occurred: $e');
+      return Failure('An unexpected error occurred: $e');
     }
   }
 
@@ -75,13 +75,13 @@ class RssFeedRepositoryImpl implements RssFeedRepository {
     try {
       final model = await apiClient.getDealById(id);
       if (model == null) {
-        return Result.failure('Deal not found');
+        return Failure('Deal not found');
       }
-      return Result.success(model.toDomain());
+      return Success(model.toDomain());
     } on DioException catch (e) {
-      return Result.failure(_mapDioError(e));
+      return Failure(_mapDioError(e));
     } catch (e) {
-      return Result.failure('An unexpected error occurred: $e');
+      return Failure('An unexpected error occurred: $e');
     }
   }
 
@@ -99,11 +99,11 @@ class RssFeedRepositoryImpl implements RssFeedRepository {
         search: search,
         limit: limit,
       );
-      return Result.success(models.map((m) => m.toDomain()).toList());
+      return Success(models.map((m) => m.toDomain()).toList());
     } on DioException catch (e) {
-      return Result.failure(_mapDioError(e));
+      return Failure(_mapDioError(e));
     } catch (e) {
-      return Result.failure('An unexpected error occurred: $e');
+      return Failure('An unexpected error occurred: $e');
     }
   }
 
@@ -111,11 +111,11 @@ class RssFeedRepositoryImpl implements RssFeedRepository {
   Future<Result<void>> recordClick(String dealId) async {
     try {
       await apiClient.recordClick(dealId);
-      return Result.success(null);
+      return Success(null);
     } on DioException catch (e) {
-      return Result.failure(_mapDioError(e));
+      return Failure(_mapDioError(e));
     } catch (e) {
-      return Result.failure('An unexpected error occurred: $e');
+      return Failure('An unexpected error occurred: $e');
     }
   }
 
@@ -123,11 +123,11 @@ class RssFeedRepositoryImpl implements RssFeedRepository {
   Future<Result<List<String>>> getCategories() async {
     try {
       final categories = await apiClient.getCategories();
-      return Result.success(categories);
+      return Success(categories);
     } on DioException catch (e) {
-      return Result.failure(_mapDioError(e));
+      return Failure(_mapDioError(e));
     } catch (e) {
-      return Result.failure('An unexpected error occurred: $e');
+      return Failure('An unexpected error occurred: $e');
     }
   }
 
@@ -135,11 +135,11 @@ class RssFeedRepositoryImpl implements RssFeedRepository {
   Future<Result<List<String>>> getStores() async {
     try {
       final stores = await apiClient.getStores();
-      return Result.success(stores);
+      return Success(stores);
     } on DioException catch (e) {
-      return Result.failure(_mapDioError(e));
+      return Failure(_mapDioError(e));
     } catch (e) {
-      return Result.failure('An unexpected error occurred: $e');
+      return Failure('An unexpected error occurred: $e');
     }
   }
 

@@ -108,4 +108,40 @@ export class CreateDealDto {
   @IsOptional()
   @IsBoolean()
   isCouponAvailable?: boolean;
+
+  // Amazon Associates Compliance Fields - Editorial Analysis
+  @IsOptional()
+  @IsString()
+  originalAnalysis?: string;
+
+  @IsOptional()
+  @IsString({ each: true })
+  pros?: string[];
+
+  @IsOptional()
+  @IsString({ each: true })
+  cons?: string[];
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  expertVerdict?: string;
+
+  @IsOptional()
+  @IsString()
+  whenToBuy?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  bestFor?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  retailer?: string;
+
+  @IsOptional()
+  @IsString()
+  priceHistoryJson?: string;
 }

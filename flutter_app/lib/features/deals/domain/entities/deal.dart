@@ -113,6 +113,28 @@ class Deal {
   /// Number of comments
   final int comments;
 
+  // Amazon Associates Compliance Fields - Editorial Analysis
+  /// Original 50-150 word analysis of the deal
+  final String? originalAnalysis;
+
+  /// List of advantages/benefits
+  final List<String> pros;
+
+  /// List of disadvantages/limitations
+  final List<String> cons;
+
+  /// Expert verdict: "BUY NOW", "WAIT", "PASS"
+  final String? expertVerdict;
+
+  /// Timing recommendation for purchase
+  final String? whenToBuy;
+
+  /// Target audience description
+  final String? bestFor;
+
+  /// Price history data as JSON string
+  final String? priceHistoryJson;
+
   /// Constructor with all required parameters
   const Deal({
     required this.id,
@@ -139,6 +161,14 @@ class Deal {
     this.bulletPoints = const [],
     this.likes = 0,
     this.comments = 0,
+    // Amazon Associates Compliance Fields
+    this.originalAnalysis,
+    this.pros = const [],
+    this.cons = const [],
+    this.expertVerdict,
+    this.whenToBuy,
+    this.bestFor,
+    this.priceHistoryJson,
   });
 
   /// Calculate the savings amount
@@ -181,6 +211,14 @@ class Deal {
     List<String>? bulletPoints,
     int? likes,
     int? comments,
+    // Amazon Associates Compliance Fields
+    String? originalAnalysis,
+    List<String>? pros,
+    List<String>? cons,
+    String? expertVerdict,
+    String? whenToBuy,
+    String? bestFor,
+    String? priceHistoryJson,
   }) {
     return Deal(
       id: id ?? this.id,
@@ -206,6 +244,13 @@ class Deal {
       bulletPoints: bulletPoints ?? this.bulletPoints,
       likes: likes ?? this.likes,
       comments: comments ?? this.comments,
+      originalAnalysis: originalAnalysis ?? this.originalAnalysis,
+      pros: pros ?? this.pros,
+      cons: cons ?? this.cons,
+      expertVerdict: expertVerdict ?? this.expertVerdict,
+      whenToBuy: whenToBuy ?? this.whenToBuy,
+      bestFor: bestFor ?? this.bestFor,
+      priceHistoryJson: priceHistoryJson ?? this.priceHistoryJson,
     );
   }
 
