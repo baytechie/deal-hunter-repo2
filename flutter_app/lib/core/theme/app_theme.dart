@@ -208,7 +208,7 @@ ThemeData buildAppTheme() {
       onSurface: AppColors.textPrimary,
     ),
     scaffoldBackgroundColor: AppColors.background,
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadius.xl),
